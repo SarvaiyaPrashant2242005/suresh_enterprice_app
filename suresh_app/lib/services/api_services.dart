@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:async';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 class ApiService {
@@ -20,12 +21,17 @@ class ApiService {
   }) async {
     final uri = Uri.parse('$baseUrl/$endpoint');
     try {
+      if (kDebugMode) {
+        print('🌐 GET: $uri');
+      }
+      
       final response = await http
           .get(
             uri,
             headers: defaultHeaders(token: token),
           )
           .timeout(const Duration(seconds: 15));
+      
       return _handleResponse(response);
     } on TimeoutException {
       throw Exception('Request timed out. Please check your network/server.');
@@ -52,6 +58,11 @@ class ApiService {
   }) async {
     final uri = Uri.parse('$baseUrl/$endpoint');
     try {
+      if (kDebugMode) {
+        print('🌐 POST: $uri');
+        print('📤 Body: ${jsonEncode(data)}');
+      }
+      
       final response = await http
           .post(
             uri,
@@ -59,6 +70,7 @@ class ApiService {
             body: jsonEncode(data),
           )
           .timeout(const Duration(seconds: 15));
+      
       return _handleResponse(response);
     } on TimeoutException {
       throw Exception('Request timed out. Please check your network/server.');
@@ -85,6 +97,11 @@ class ApiService {
   }) async {
     final uri = Uri.parse('$baseUrl/$endpoint');
     try {
+      if (kDebugMode) {
+        print('🌐 PUT: $uri');
+        print('📤 Body: ${jsonEncode(data)}');
+      }
+      
       final response = await http
           .put(
             uri,
@@ -92,6 +109,7 @@ class ApiService {
             body: jsonEncode(data),
           )
           .timeout(const Duration(seconds: 15));
+      
       return _handleResponse(response);
     } on TimeoutException {
       throw Exception('Request timed out. Please check your network/server.');
@@ -117,12 +135,17 @@ class ApiService {
   }) async {
     final uri = Uri.parse('$baseUrl/$endpoint');
     try {
+      if (kDebugMode) {
+        print('🌐 DELETE: $uri');
+      }
+      
       final response = await http
           .delete(
             uri,
             headers: defaultHeaders(token: token),
           )
           .timeout(const Duration(seconds: 15));
+      
       return _handleResponse(response);
     } on TimeoutException {
       throw Exception('Request timed out. Please check your network/server.');
@@ -143,29 +166,96 @@ class ApiService {
   }
 
   static dynamic _handleResponse(http.Response response) {
-    final bodyText = response.body.isNotEmpty ? response.body : null;
-    final isJson =
-        response.headers['content-type']?.contains('application/json') ?? false;
-    final parsed = isJson && bodyText != null
-        ? _tryParseJson(bodyText)
-        : bodyText;
-
-    if (response.statusCode == 200 || response.statusCode == 201) {
-      return parsed is Map || parsed is List ? parsed : {};
+    if (kDebugMode) {
+      print('📊 Status: ${response.statusCode}');
+      print('📋 Content-Type: ${response.headers['content-type']}');
+      print('📦 Body Length: ${response.body.length}');
+      print('📥 Raw Body: ${response.body.substring(0, response.body.length > 500 ? 500 : response.body.length)}');
     }
 
-    final message = parsed is Map && parsed['message'] != null
-        ? parsed['message']
-        : parsed is Map && parsed['error'] != null
-        ? parsed['error']
-        : 'Request failed with status: ${response.statusCode}';
+    // Check if response is empty
+    if (response.body.isEmpty) {
+      if (kDebugMode) {
+        print('⚠️ Empty response body');
+      }
+      
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return {};
+      }
+      
+      throw Exception('Empty response from server (Status: ${response.statusCode})');
+    }
+
+    // Check content type
+    final contentType = response.headers['content-type'] ?? '';
+    final isJson = contentType.contains('application/json');
+
+    if (kDebugMode) {
+      print('🔍 Is JSON: $isJson');
+    }
+
+    // If not JSON, check if it's HTML (error page)
+    if (!isJson && response.body.trim().startsWith('<')) {
+      if (kDebugMode) {
+        print('❌ Server returned HTML instead of JSON');
+      }
+      throw Exception('Server error: Received HTML instead of JSON (Status: ${response.statusCode})');
+    }
+
+    // Try to parse JSON
+    dynamic parsed;
+    if (isJson || response.body.trim().startsWith('{') || response.body.trim().startsWith('[')) {
+      try {
+        parsed = jsonDecode(response.body);
+        if (kDebugMode) {
+          print('✅ JSON parsed successfully');
+        }
+      } on FormatException catch (e) {
+        if (kDebugMode) {
+          print('❌ JSON parsing failed: $e');
+          print('Problematic content: ${response.body}');
+        }
+        throw Exception('Invalid JSON response from server');
+      }
+    } else {
+      if (kDebugMode) {
+        print('⚠️ Response is not JSON');
+      }
+      parsed = response.body;
+    }
+
+    // Handle success responses
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      if (kDebugMode) {
+        print('✅ Success response');
+      }
+      return parsed is Map || parsed is List ? parsed : {'data': parsed};
+    }
+
+    // Handle error responses
+    if (kDebugMode) {
+      print('❌ Error response: ${response.statusCode}');
+    }
+
+    String message;
+    if (parsed is Map) {
+      message = parsed['message']?.toString() ?? 
+                parsed['error']?.toString() ?? 
+                'Request failed with status: ${response.statusCode}';
+    } else {
+      message = 'Request failed with status: ${response.statusCode}';
+    }
+
     throw Exception(message);
   }
 
   static dynamic _tryParseJson(String text) {
     try {
       return jsonDecode(text);
-    } catch (_) {
+    } catch (e) {
+      if (kDebugMode) {
+        print('⚠️ JSON parse attempt failed: $e');
+      }
       return text;
     }
   }

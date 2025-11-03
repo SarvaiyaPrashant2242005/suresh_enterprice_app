@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/auth_provider.dart';
+import '../widgets/loader_widget.dart'; // Add this import
 import 'dashboard_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -27,11 +28,11 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     final auth = context.read<AuthProvider>();
-    await auth.login(
+    final success = await auth.login(
       email: _emailController.text.trim(),
       password: _passwordController.text,
     );
-    if (mounted && auth.errorMessage == null) {
+    if (mounted && success) {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (_) => const DashboardScreen()),
       );
@@ -43,18 +44,20 @@ class _LoginScreenState extends State<LoginScreen> {
     final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(title: const Text('Login')),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 420),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Consumer<AuthProvider>(
-              builder: (context, auth, _) {
-                return Column(
+      body: Consumer<AuthProvider>(
+        builder: (context, auth, _) {
+          // Show full-screen loader while logging in
+         
+          
+          return Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 420),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                   
                     const SizedBox(height: 16),
                     Form(
                       key: _formKey,
@@ -105,34 +108,28 @@ class _LoginScreenState extends State<LoginScreen> {
                               padding: const EdgeInsets.only(bottom: 8.0),
                               child: Text(
                                 auth.errorMessage!,
-                                style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.error),
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  color: theme.colorScheme.error,
+                                ),
                               ),
                             ),
                           SizedBox(
                             width: double.infinity,
                             child: FilledButton(
-                              onPressed: auth.isLoading ? null : _submit,
-                              child: auth.isLoading
-                                  ? const SizedBox(
-                                      height: 20,
-                                      width: 20,
-                                      child: CircularProgressIndicator(strokeWidth: 2),
-                                    )
-                                  : const Text('Login'),
+                              onPressed: _submit,
+                              child: const Text('Login'),
                             ),
                           ),
                         ],
                       ),
                     ),
                   ],
-                );
-              },
+                ),
+              ),
             ),
-          ),
-        ),
+          );
+        },
       ),
     );
   }
 }
-
-

@@ -28,7 +28,7 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> login({required String email, required String password}) async {
+  Future<bool> login({required String email, required String password}) async {
     _setLoading(true);
     _errorMessage = null;
     try {
@@ -45,22 +45,16 @@ class AuthProvider extends ChangeNotifier {
         _token = resp['token'] as String?;
         final user = resp['user'];
         _authData = user is Map<String, dynamic> ? user : resp;
-        final userId = (_authData?['id'] as num?)?.toInt();
-        if (_token != null && userId != null) {
-          try {
-            (_storage ??= StorageService());
-            await _storage!.saveAuth(
-              token: _token!,
-              userId: userId,
-              userType: _authData?['userType']?.toString(),
-              name: _authData?['name']?.toString(),
-              email: _authData?['email']?.toString(),
-            );
-          } catch (e) {
-            if (kDebugMode) {
-              // ignore: avoid_print
-              print('Failed to persist auth: ' + e.toString());
-            }
+        
+        try {
+          (_storage ??= StorageService());
+          // Save the complete login response
+          await _storage!.saveLoginResponse(resp);
+          return true; // Login successful
+        } catch (e) {
+          if (kDebugMode) {
+            // ignore: avoid_print
+            print('Failed to persist auth: ' + e.toString());
           }
         }
       } else {
@@ -77,6 +71,7 @@ class AuthProvider extends ChangeNotifier {
     } finally {
       _setLoading(false);
     }
+    return false; // Login failed
   }
 
   Future<void> initialize() async {
