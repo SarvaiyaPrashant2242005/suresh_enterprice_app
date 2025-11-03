@@ -55,12 +55,12 @@ app.use(cookieParser());
 app.use("/uploads", express.static("uploads"));
 
 // ✅ API Routes
-// app.use("/", (req,res) => {
-//   res.json({
-//     status : "ok",
-//     messege : "server is running"
-//   })
-// })
+app.get("/", (req,res) => {
+  res.json({
+    status : "ok",
+    messege : "server is running"
+  })
+})
 app.use("/api/categories", categoryRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/customers", customerRoutes);
