@@ -3,9 +3,10 @@ import 'dart:async';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'endpoints.dart';
 
 class ApiService {
-  static const String baseUrl = 'https://suresh-enterprice-app.onrender.com';
+  static const String baseUrl = ApiEndpoints.baseUrl;
 
   static Map<String, String> defaultHeaders({String? token}) {
     return {

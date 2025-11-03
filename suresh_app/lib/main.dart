@@ -1,23 +1,67 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'providers/auth_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'services/api_client.dart';
+import 'providers/auth_provider_updated.dart';
+import 'providers/category_provider.dart';
+import 'providers/product_provider.dart';
+import 'providers/customer_provider.dart';
+import 'providers/gst_master_provider.dart';
 import 'screens/splash_screen.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize SharedPreferences
+  final prefs = await SharedPreferences.getInstance();
+  
+  // Get token from SharedPreferences
+  final token = prefs.getString('auth_token') ?? '';
+  
+  // Initialize ApiClient with token (named parameter)
+  final apiClient = ApiClient(token: token);
+  
+  runApp(MyApp(
+    prefs: prefs,
+    apiClient: apiClient,
+  ));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final SharedPreferences prefs;
+  final ApiClient apiClient;  
+  
+  const MyApp({ 
+    Key? key,
+    required this.prefs,
+    required this.apiClient,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => AuthProvider(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (_) => AuthProvider(apiClient, prefs),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => CategoryProvider(apiClient),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => ProductProvider(apiClient),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => CustomerProvider(apiClient),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => GstMasterProvider(apiClient),
+        ),
+      ],
       child: MaterialApp(
-        title: 'Suresh App',
+        title: 'Suresh Enterprise',
         theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+          primarySwatch: Colors.blue,
+          visualDensity: VisualDensity.adaptivePlatformDensity,
         ),
         home: const SplashScreen(),
       ),

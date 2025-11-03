@@ -1,29 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
-import '../providers/auth_provider.dart';
+import '../providers/auth_provider_updated.dart';
 import '../widgets/sidebar_drawer.dart';
 import 'profile_screen.dart';
+import 'categories_screen.dart';
+import 'products_screen.dart';
+import 'customers_screen.dart';
+import 'gst_master_screen.dart';
+import 'home_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
-  const DashboardScreen({super.key});
+  const DashboardScreen({Key? key}) : super(key: key);
 
   @override
   State<DashboardScreen> createState() => _DashboardScreenState();
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  String _title = 'Dashboard';
-
+  String _title = 'Home';
+  
   void _onSelect(String title) {
     setState(() {
       _title = title;
     });
-    Navigator.of(context).pop();
   }
 
   Widget _getScreenForTitle(String title) {
     switch (title) {
+      case 'Home':
+        return const HomeScreen();
       case 'Profile':
         return const ProfileScreen();
       case 'Categories':
@@ -33,140 +38,61 @@ class _DashboardScreenState extends State<DashboardScreen> {
       case 'Customers':
         return const CustomersScreen();
       case 'GST Master':
-        return const GSTMasterScreen();
-      case 'Company Profile':
-        return const CompanyProfileScreen();
-      case 'Invoices':
-        return const InvoicesScreen();
-      case 'Users':
-        return const UsersScreen();
+        return const GstMasterScreen();
       default:
-        return const HomeScreen();
+        return Center(
+          child: Text(
+            'Coming Soon: $_title',
+            style: const TextStyle(fontSize: 24),
+          ),
+        );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final auth = Provider.of<AuthProvider>(context);
+    final userType = auth.authData?['user']?['userType'] ?? 'User';
+    
     return Scaffold(
-      appBar: AppBar(title: Text(_title)),
+      appBar: AppBar(
+        title: Text(_title),
+      ),
       drawer: SidebarDrawer(onSelect: _onSelect),
       body: _getScreenForTitle(_title),
     );
   }
 }
 
-// Home Screen (Default Dashboard)
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+  const HomeScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final auth = context.watch<AuthProvider>();
-    final user = auth.authData;
-    final userType = user?['userType'] as String? ?? 'Unknown';
+    final auth = Provider.of<AuthProvider>(context);
+    final userName = auth.authData?['user']?['name'] ?? 'User';
     
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(
-            'Welcome to Suresh Enterprise',
-            style: theme.textTheme.headlineSmall,
+          const Icon(
+            Icons.dashboard,
+            size: 100,
+            color: Colors.blue,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
           Text(
-            'User Type: $userType',
-            style: theme.textTheme.titleMedium?.copyWith(
-              color: theme.colorScheme.primary,
-            ),
+            'Welcome, $userName!',
+            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 10),
+          const Text(
+            'Select an option from the sidebar to get started',
+            style: TextStyle(fontSize: 16),
           ),
         ],
       ),
-    );
-  }
-}
-
-// Categories Screen
-class CategoriesScreen extends StatelessWidget {
-  const CategoriesScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Text('Categories Screen - Coming Soon'),
-    );
-  }
-}
-
-// Products Screen
-class ProductsScreen extends StatelessWidget {
-  const ProductsScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Text('Products Screen - Coming Soon'),
-    );
-  }
-}
-
-// Customers Screen
-class CustomersScreen extends StatelessWidget {
-  const CustomersScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Text('Customers Screen - Coming Soon'),
-    );
-  }
-}
-
-// GST Master Screen
-class GSTMasterScreen extends StatelessWidget {
-  const GSTMasterScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Text('GST Master Screen - Coming Soon'),
-    );
-  }
-}
-
-// Company Profile Screen
-class CompanyProfileScreen extends StatelessWidget {
-  const CompanyProfileScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Text('Company Profile Screen - Coming Soon'),
-    );
-  }
-}
-
-// Invoices Screen
-class InvoicesScreen extends StatelessWidget {
-  const InvoicesScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Text('Invoices Screen - Coming Soon'),
-    );
-  }
-}
-
-// Users Screen
-class UsersScreen extends StatelessWidget {
-  const UsersScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Text('Users Screen - Coming Soon'),
     );
   }
 }

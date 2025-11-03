@@ -9,11 +9,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:suresh_app/main.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:suresh_app/services/api_client.dart';
 
 void main() {
   testWidgets('Counter increments smoke test', (WidgetTester tester) async {
+    // Provide minimal dependencies required by MyApp
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    final apiClient = ApiClient(token: null);
+
     // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+    await tester.pumpWidget(MyApp(prefs: prefs, apiClient: apiClient));
 
     // Verify that our counter starts at 0.
     expect(find.text('0'), findsOneWidget);

@@ -39,6 +39,7 @@ dependencies:
   shared_preferences: ^2.3.2
   lottie: ^3.1.0
   flutter_launcher_icons: ^0.13.1
+  image_picker: ^1.0.7
 
 dev_dependencies:
   flutter_test:

@@ -1,59 +1,103 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
-import '../providers/auth_provider.dart';
-import '../screens/login_screen.dart';
+import '../providers/auth_provider_updated.dart';
 
 class SidebarDrawer extends StatelessWidget {
-  const SidebarDrawer({super.key, required this.onSelect});
+  final Function(String) onSelect;
 
-  final void Function(String title) onSelect;
+  const SidebarDrawer({Key? key, required this.onSelect}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final user = context.watch<AuthProvider>().authData;
+  final auth = Provider.of<AuthProvider>(context);
+  final userType = auth.authData?['userType'] ?? 'User';
+  final userName = auth.authData?['name'] ?? 'User';
+  final userEmail = auth.authData?['email'] ?? 'user@example.com';
+
     return Drawer(
-      child: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            UserAccountsDrawerHeader(
-              accountName: Text(user?['name']?.toString() ?? 'Admin'),
-              accountEmail: Text(user?['email']?.toString() ?? ''),
-              currentAccountPicture: const CircleAvatar(child: Icon(Icons.person)),
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          UserAccountsDrawerHeader(
+            accountName: Text(userName),
+            accountEmail: Text(userEmail),
+            currentAccountPicture: CircleAvatar(
+              backgroundColor: Colors.white,
+              child: Text(
+                userName.isNotEmpty ? userName[0].toUpperCase() : 'U',
+                style: const TextStyle(fontSize: 40.0),
+              ),
             ),
-            _drawerItem(context, Icons.category, 'Categories'),
-            _drawerItem(context, Icons.shopping_bag, 'Products'),
-            _drawerItem(context, Icons.group, 'Customers'),
-            _drawerItem(context, Icons.receipt_long, 'GST Master'),
-            _drawerItem(context, Icons.business, 'Company Profilee'),
-            _drawerItem(context, Icons.description, 'Invoices'),
-            _drawerItem(context, Icons.supervised_user_circle, 'Users'),
-            _drawerItem(context, Icons.person, 'Profile'),
-            const Spacer(),
-            ListTile(
-              leading: const Icon(Icons.logout),
-              title: const Text('Logout'),
-              onTap: () async {
-                await context.read<AuthProvider>().logout();
-                if (!context.mounted) return;
-                Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (_) => const LoginScreen()),
-                  (route) => false,
-                );
-              },
+          ),
+          _buildDrawerItem(
+            icon: Icons.home,
+            title: 'Home',
+            onTap: () => onSelect('Home'),
+          ),
+          _buildDrawerItem(
+            icon: Icons.category,
+            title: 'Categories',
+            onTap: () => onSelect('Categories'),
+          ),
+          _buildDrawerItem(
+            icon: Icons.inventory,
+            title: 'Products',
+            onTap: () => onSelect('Products'),
+          ),
+          _buildDrawerItem(
+            icon: Icons.people,
+            title: 'Customers',
+            onTap: () => onSelect('Customers'),
+          ),
+          _buildDrawerItem(
+            icon: Icons.receipt,
+            title: 'GST Master',
+            onTap: () => onSelect('GST Master'),
+          ),
+         
+          _buildDrawerItem(
+            icon: Icons.receipt_long,
+            title: 'Invoices',
+            onTap: () => onSelect('Invoices'),
+          ), _buildDrawerItem(
+            icon: Icons.business,
+            title: 'Users',
+            onTap: () => onSelect('Users'),
+          ),
+          if (userType == 'Admin')
+            _buildDrawerItem(
+              icon: Icons.people_alt,
+              title: 'Users',
+              onTap: () => onSelect('Users'),
             ),
-          ],
-        ),
+          const Divider(),
+          _buildDrawerItem(
+            icon: Icons.person,
+            title: 'Profile',
+            onTap: () => onSelect('Profile'),
+          ),
+          _buildDrawerItem(
+            icon: Icons.logout,
+            title: 'Logout',
+            onTap: () {
+              auth.logout();
+              Navigator.of(context).pushReplacementNamed('/login');
+            },
+          ),
+        ],
       ),
     );
   }
 
-  Widget _drawerItem(BuildContext context, IconData icon, String title) {
+  Widget _buildDrawerItem({
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+  }) {
     return ListTile(
       leading: Icon(icon),
       title: Text(title),
-      onTap: () => onSelect(title),
+      onTap: onTap,
     );
   }
 }

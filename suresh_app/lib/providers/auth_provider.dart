@@ -1,11 +1,12 @@
 import 'package:flutter/foundation.dart';
+import 'package:suresh_app/services/api_client.dart';
 import '../services/api_services.dart';
 import '../services/storage_service.dart';
 
 enum AuthRole { user, admin }
 
 class AuthProvider extends ChangeNotifier {
-  AuthProvider({StorageService? storage}) : _storage = storage;
+  AuthProvider(ApiClient apiClient, {StorageService? storage}) : _storage = storage;
 
   bool _isLoading = false;
   String? _errorMessage;  

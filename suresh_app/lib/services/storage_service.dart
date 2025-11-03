@@ -81,6 +81,11 @@ class StorageService {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString(_keyUserEmail);
   }
+
+  Future<int?> getCompanyId() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getInt(_keyCompanyId);
+  }
 }
 
 
