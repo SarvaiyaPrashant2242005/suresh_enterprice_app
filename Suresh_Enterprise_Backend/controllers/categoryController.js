@@ -148,6 +148,26 @@ exports.updateCategoryById = async (req, res, next) => {
     }
 };
 
+exports.getCategoryByCompanyId = async (req, res, next) => {
+    try {
+        const { company_id } = req.params;
+        if (!company_id) {
+            return res.status(400).json({
+                success: false,
+                error: "Company ID is required."
+            });
+        }
+        const categories = await Category.findAll({ where: { company_id } });
+        res.status(200).json({
+            success: true,
+            data: categories
+        });
+    } catch (error) {
+        console.error("Error fetching categories by company id: ", error);
+        next(error);
+    }
+};
+
 exports.deleteCategoryById = async (req, res, next) => {
     try {
         const category = await Category.findByPk(req.params.id);
