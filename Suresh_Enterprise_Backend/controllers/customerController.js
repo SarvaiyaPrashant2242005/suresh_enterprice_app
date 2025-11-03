@@ -1,3 +1,17 @@
+// Get customers by company_id
+exports.getCustomersByCompany = async (req, res, next) => {
+    try {
+        const { company_id } = req.params;
+        if (!company_id) {
+            return res.status(400).json({ success: false, error: "Company ID is required." });
+        }
+        const customers = await Customers.findAll({ where: { company_id } });
+        res.status(200).json({ success: true, data: customers });
+    } catch (error) {
+        console.error("Error fetching customers by company:", error);
+        next(error);
+    }
+};
 const Customers = require("../models/customer");
 const CompanyProfile = require("../models/companyProfile");
 const { Op } = require("sequelize");
