@@ -54,25 +54,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    ToggleButtons(
-                      isSelected: [
-                        auth.selectedRole == AuthRole.user,
-                        auth.selectedRole == AuthRole.admin,
-                      ],
-                      onPressed: (index) {
-                        auth.setRole(index == 0 ? AuthRole.user : AuthRole.admin);
-                      },
-                      children: const [
-                        Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                          child: Text('User'),
-                        ),
-                        Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                          child: Text('Admin'),
-                        ),
-                      ],
-                    ),
+                   
                     const SizedBox(height: 16),
                     Form(
                       key: _formKey,

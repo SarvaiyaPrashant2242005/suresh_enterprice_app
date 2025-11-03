@@ -33,8 +33,15 @@ class ApiService {
       throw Exception(
         'Network error: ${e.message}. Is the server reachable at $baseUrl?',
       );
+    } on http.ClientException catch (e) {
+      throw Exception(
+        'Connection failed: ${e.message}. Please check:\n'
+        '1. Your internet connection\n'
+        '2. If the server is running\n'
+        '3. Firewall/VPN settings',
+      );
     } catch (e) {
-      throw Exception('Unexpected error: $e');
+      throw Exception('Error: ${e.toString()}');
     }
   }
 
@@ -59,8 +66,15 @@ class ApiService {
       throw Exception(
         'Network error: ${e.message}. Is the server reachable at $baseUrl?',
       );
+    } on http.ClientException catch (e) {
+      throw Exception(
+        'Connection failed: ${e.message}. Please check:\n'
+        '1. Your internet connection\n'
+        '2. If the server is running\n'
+        '3. Firewall/VPN settings',
+      );
     } catch (e) {
-      throw Exception('Unexpected error: $e');
+      throw Exception('Error: ${e.toString()}');
     }
   }
 
@@ -85,8 +99,15 @@ class ApiService {
       throw Exception(
         'Network error: ${e.message}. Is the server reachable at $baseUrl?',
       );
+    } on http.ClientException catch (e) {
+      throw Exception(
+        'Connection failed: ${e.message}. Please check:\n'
+        '1. Your internet connection\n'
+        '2. If the server is running\n'
+        '3. Firewall/VPN settings',
+      );
     } catch (e) {
-      throw Exception('Unexpected error: $e');
+      throw Exception('Error: ${e.toString()}');
     }
   }
 
@@ -109,8 +130,15 @@ class ApiService {
       throw Exception(
         'Network error: ${e.message}. Is the server reachable at $baseUrl?',
       );
+    } on http.ClientException catch (e) {
+      throw Exception(
+        'Connection failed: ${e.message}. Please check:\n'
+        '1. Your internet connection\n'
+        '2. If the server is running\n'
+        '3. Firewall/VPN settings',
+      );
     } catch (e) {
-      throw Exception('Unexpected error: $e');
+      throw Exception('Error: ${e.toString()}');
     }
   }
 
