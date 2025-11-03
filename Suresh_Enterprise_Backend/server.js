@@ -22,13 +22,22 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ✅ Proper CORS setup
+// ✅ Proper CORS setup - Allows mobile apps, web apps, and API tools
 const corsOptions = {
-  origin: [
-    "http://localhost:50891",   // Flutter web dev port (auto-assigned)
-    "http://localhost:5500",    // alternate dev port
-    "http://192.168.1.5:50891", // LAN access for Chrome web
-  ],
+  origin: function (origin, callback) {
+    // Allow requests with no origin (mobile apps, Thunder Client, Postman, etc.)
+    if (!origin) return callback(null, true);
+    
+    const allowedOrigins = [
+      "http://localhost:50891",   // Flutter web dev port (auto-assigned)
+      "http://localhost:5500",    // alternate dev port
+      "http://192.168.1.5:50891", // LAN access for Chrome web
+      "https://suresh-enterprice-app.onrender.com", // Production backend
+    ];
+    
+    // For now, allow all origins (can be restricted for security later)
+    callback(null, true);
+  },
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
