@@ -1,8 +1,9 @@
+
 class Customer {
   final int? id;
-  final String name;
-  final String? email;
-  final String? phone;
+  final String customerName;
+  final String? emailAddress;
+  final String? contactNumber;
   final String? address;
   final String? gstNumber;
   final String? stateCode;
@@ -13,12 +14,13 @@ class Customer {
   final bool? isActive;
   final DateTime? createdAt;
   final DateTime? updatedAt;
+  final int? company_id;
 
   Customer({
     this.id,
-    required this.name,
-    this.email,
-    this.phone,
+    required this.customerName,
+    this.emailAddress,
+    this.contactNumber,
     this.address,
     this.gstNumber,
     this.stateCode,
@@ -29,14 +31,15 @@ class Customer {
     this.isActive,
     this.createdAt,
     this.updatedAt,
+    this.company_id,
   });
 
   factory Customer.fromJson(Map<String, dynamic> json) {
     return Customer(
       id: json['id'],
-      name: json['name'],
-      email: json['email'],
-      phone: json['phone'],
+      customerName: json['customerName'] ?? json['name'],
+      emailAddress: json['emailAddress'] ?? json['email'],
+      contactNumber: json['contactNumber'] ?? json['phone'],
       address: json['address'],
       gstNumber: json['gstNumber'],
       stateCode: json['stateCode'],
@@ -47,15 +50,16 @@ class Customer {
       isActive: json['isActive'] is bool ? json['isActive'] : (json['isActive'] == null ? null : json['isActive'].toString() == '1' || json['isActive'].toString().toLowerCase() == 'true'),
       createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt']) : null,
       updatedAt: json['updatedAt'] != null ? DateTime.parse(json['updatedAt']) : null,
+      company_id: json['company_id'],
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       if (id != null) 'id': id,
-      'name': name,
-      if (email != null) 'email': email,
-      if (phone != null) 'phone': phone,
+      'customerName': customerName,
+      if (emailAddress != null) 'emailAddress': emailAddress,
+      if (contactNumber != null) 'contactNumber': contactNumber,
       if (address != null) 'address': address,
       if (gstNumber != null) 'gstNumber': gstNumber,
       if (stateCode != null) 'stateCode': stateCode,
@@ -64,6 +68,7 @@ class Customer {
       if (openingBalance != null) 'openingBalance': openingBalance,
       if (openingDate != null) 'openingDate': openingDate!.toIso8601String(),
       if (isActive != null) 'isActive': isActive,
+      if (company_id != null) 'company_id': company_id,
     };
   }
 }

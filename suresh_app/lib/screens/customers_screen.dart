@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../providers/auth_provider.dart';
 import '../model/customer.dart';
 import '../providers/customer_provider.dart';
 import '../widgets/loading_indicator.dart';
@@ -23,20 +22,25 @@ class _CustomersScreenState extends State<CustomersScreen> {
   final _shippingAddressController = TextEditingController();
   final _openingBalanceController = TextEditingController();
   final _addressController = TextEditingController();
+
+  Future<void> _refreshCustomers() async {
+    try {
+      // CustomerProvider.fetchCustomers() will get companyId from StorageService internally
+      await Provider.of<CustomerProvider>(context, listen: false).fetchCustomers();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error refreshing customers: $e')),
+        );
+      }
+    }
+  }
   
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final auth = Provider.of<AuthProvider>(context, listen: false);
-      int? companyId;
-      final ad = auth.authData;
-      if (ad != null) {
-        final dynamic c = ad['company_id'] ?? ad['companyId'] ?? (ad['user'] is Map ? (ad['user']['company_id'] ?? ad['user']['companyId']) : null);
-        if (c is num) companyId = c.toInt();
-        if (c is String) companyId = int.tryParse(c);
-      }
-      Provider.of<CustomerProvider>(context, listen: false).fetchCustomers(companyId: companyId);
+      _refreshCustomers();
     });
   }
 
@@ -68,11 +72,11 @@ class _CustomersScreenState extends State<CustomersScreen> {
 
   void _showAddEditBottomSheet(BuildContext context, [Customer? customer]) {
     if (customer != null) {
-      _nameController.text = customer.name;
+      _nameController.text = customer.customerName;
       _gstNumberController.text = customer.gstNumber ?? '';
       _stateCodeController.text = customer.stateCode ?? '';
-      _phoneController.text = customer.phone ?? '';
-      _emailController.text = customer.email ?? '';
+      _phoneController.text = customer.contactNumber ?? '';
+      _emailController.text = customer.emailAddress ?? '';
       _billingAddressController.text = customer.billingAddress ?? '';
       _shippingAddressController.text = customer.shippingAddress ?? '';
       _openingBalanceController.text = customer.openingBalance?.toStringAsFixed(2) ?? '0.00';
@@ -108,6 +112,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+     
       body: Consumer<CustomerProvider>(
         builder: (ctx, customerProvider, child) {
           if (customerProvider.isLoading) {
@@ -122,17 +127,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
                   Text('Error: ${customerProvider.errorMessage}'),
                   const SizedBox(height: 16),
                   ElevatedButton(
-                    onPressed: () {
-                      final auth = Provider.of<AuthProvider>(context, listen: false);
-                      int? companyId;
-                      final ad = auth.authData;
-                      if (ad != null) {
-                        final dynamic c = ad['company_id'] ?? ad['companyId'] ?? (ad['user'] is Map ? (ad['user']['company_id'] ?? ad['user']['companyId']) : null);
-                        if (c is num) companyId = c.toInt();
-                        if (c is String) companyId = int.tryParse(c);
-                      }
-                      customerProvider.fetchCustomers(companyId: companyId);
-                    },
+                    onPressed: _refreshCustomers,
                     child: const Text('Retry'),
                   ),
                 ],
@@ -157,17 +152,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
           }
 
           return RefreshIndicator(
-            onRefresh: () async {
-              final auth = Provider.of<AuthProvider>(context, listen: false);
-              int? companyId;
-              final ad = auth.authData;
-              if (ad != null) {
-                final dynamic c = ad['company_id'] ?? ad['companyId'] ?? (ad['user'] is Map ? (ad['user']['company_id'] ?? ad['user']['companyId']) : null);
-                if (c is num) companyId = c.toInt();
-                if (c is String) companyId = int.tryParse(c);
-              }
-              await customerProvider.fetchCustomers(companyId: companyId);
-            },
+            onRefresh: _refreshCustomers,
             child: ListView.builder(
               itemCount: customerProvider.customers.length,
               itemBuilder: (ctx, index) {
@@ -178,14 +163,14 @@ class _CustomersScreenState extends State<CustomersScreen> {
                     horizontal: 16,
                   ),
                   child: ListTile(
-                    title: Text(customer.name),
+                    title: Text(customer.customerName),
                     subtitle: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        if (customer.phone != null && customer.phone!.isNotEmpty)
-                          Text('Phone: ${customer.phone}'),
-                        if (customer.email != null && customer.email!.isNotEmpty)
-                          Text('Email: ${customer.email}'),
+                        if (customer.contactNumber != null && customer.contactNumber!.isNotEmpty)
+                          Text('Phone: ${customer.contactNumber}'),
+                        if (customer.emailAddress != null && customer.emailAddress!.isNotEmpty)
+                          Text('Email: ${customer.emailAddress}'),
                       ],
                     ),
                     trailing: Row(
@@ -492,11 +477,11 @@ class _CustomerFormSheetState extends State<_CustomerFormSheet> {
                             if (widget.formKey.currentState!.validate()) {
                               final customerData = Customer(
                                 id: widget.customer?.id,
-                                name: widget.nameController.text,
+                                customerName: widget.nameController.text,
                                 gstNumber: widget.gstNumberController.text.isEmpty ? null : widget.gstNumberController.text,
                                 stateCode: widget.stateCodeController.text.isEmpty ? null : widget.stateCodeController.text,
-                                phone: widget.phoneController.text.isEmpty ? null : widget.phoneController.text,
-                                email: widget.emailController.text.isEmpty ? null : widget.emailController.text,
+                                contactNumber: widget.phoneController.text.isEmpty ? null : widget.phoneController.text,
+                                emailAddress: widget.emailController.text.isEmpty ? null : widget.emailController.text,
                                 billingAddress: widget.billingAddressController.text.isEmpty ? null : widget.billingAddressController.text,
                                 shippingAddress: widget.shippingAddressController.text.isEmpty ? null : widget.shippingAddressController.text,
                                 address: widget.addressController.text.isEmpty ? null : widget.addressController.text,

@@ -116,7 +116,7 @@ class _GstMasterListState extends State<GstMasterList> {
                         onPressed: () {
                           Navigator.of(context).push(
                             MaterialPageRoute(
-                              builder: (context) => GstMasterForm(
+                              builder: (context) => GstMasterBottomSheet(
                                 gstMaster: gstMaster,
                               ),
                             ),
@@ -139,7 +139,7 @@ class _GstMasterListState extends State<GstMasterList> {
         onPressed: () {
           Navigator.of(context).push(
             MaterialPageRoute(
-              builder: (context) => const GstMasterForm(),
+              builder: (context) => const GstMasterBottomSheet(),
             ),
           );
         },

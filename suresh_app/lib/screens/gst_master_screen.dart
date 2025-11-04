@@ -222,9 +222,9 @@ class _GstMasterScreenState extends State<GstMasterScreen> {
                     subtitle: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('CGST: ${gstMaster.cgst}%'),
-                        Text('SGST: ${gstMaster.sgst}%'),
-                        Text('IGST: ${gstMaster.igst}%'),
+                        Text('CGST: ${gstMaster.cgst.toStringAsFixed(2)}%'),
+                        Text('SGST: ${gstMaster.sgst.toStringAsFixed(2)}%'),
+                        Text('IGST: ${gstMaster.igst.toStringAsFixed(2)}%'),
                         if (gstMaster.description != null && 
                             gstMaster.description!.isNotEmpty)
                           Text('Description: ${gstMaster.description}'),

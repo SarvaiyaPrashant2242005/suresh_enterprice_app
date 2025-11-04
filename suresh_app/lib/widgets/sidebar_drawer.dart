@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider_updated.dart';
+import '../providers/customer_provider.dart';
 
 class SidebarDrawer extends StatelessWidget {
   final Function(String) onSelect;
@@ -9,10 +10,10 @@ class SidebarDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-  final auth = Provider.of<AuthProvider>(context);
-  final userType = auth.authData?['userType'] ?? 'User';
-  final userName = auth.authData?['name'] ?? 'User';
-  final userEmail = auth.authData?['email'] ?? 'user@example.com';
+    final auth = Provider.of<AuthProvider>(context);
+    final userType = auth.authData?['userType'] ?? 'User';
+    final userName = auth.authData?['name'] ?? 'User';
+    final userEmail = auth.authData?['email'] ?? 'user@example.com';
 
     return Drawer(
       child: ListView(
@@ -47,19 +48,24 @@ class SidebarDrawer extends StatelessWidget {
           _buildDrawerItem(
             icon: Icons.people,
             title: 'Customers',
-            onTap: () => onSelect('Customers'),
+            onTap: () {
+              // Trigger fetch before navigating
+              Provider.of<CustomerProvider>(context, listen: false)
+                  .fetchCustomers();
+              onSelect('Customers');
+            },
           ),
           _buildDrawerItem(
             icon: Icons.receipt,
             title: 'GST Master',
             onTap: () => onSelect('GST Master'),
           ),
-         
           _buildDrawerItem(
             icon: Icons.receipt_long,
             title: 'Invoices',
             onTap: () => onSelect('Invoices'),
-          ), _buildDrawerItem(
+          ),
+          _buildDrawerItem(
             icon: Icons.business,
             title: 'Users',
             onTap: () => onSelect('Users'),
@@ -101,5 +107,3 @@ class SidebarDrawer extends StatelessWidget {
     );
   }
 }
-
-

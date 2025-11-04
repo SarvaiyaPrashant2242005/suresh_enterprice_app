@@ -13,17 +13,21 @@ class CustomerProvider extends BaseProvider {
 
   List<Customer> get customers => _customers;
 
-  Future<void> fetchCustomers({int? companyId, int? userId}) async {
+  Future<void> fetchCustomers({int? companyId}) async {
     setLoading(true);
     clearError();
-    
     try {
       // If caller didn't provide companyId, try to read from storage
       if (companyId == null) {
         companyId = await _storage.getCompanyId();
       }
-      final response = await _apiClient.getCustomers(companyId: companyId, userId: userId);
-      _customers = response;
+      print('Fetching customers for companyId: $companyId');
+      if (companyId != null) {
+        final response = await _apiClient.getCustomersByCompanyId(companyId);
+        _customers = response;
+      } else {
+        _customers = [];
+      }
       notifyListeners();
     } catch (e) {
       setError(e.toString());

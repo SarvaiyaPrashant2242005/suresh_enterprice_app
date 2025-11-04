@@ -295,7 +295,7 @@ class ApiClient {
   // Create product and optionally attach companyId into payload
   Future<Product> createProductWithCompany(Product product, {int? companyId}) async {
     final payload = Map<String, dynamic>.from(product.toJson());
-    if (companyId != null) payload['companyId'] = companyId;
+    if (companyId != null) payload['company_id'] = companyId;
     final data = await post(ApiEndpoints.products, payload);
     final item = _extractItem(data);
     return Product.fromJson(item);
@@ -322,6 +322,21 @@ class ApiClient {
     return list.map((item) => Customer.fromJson(item as Map<String, dynamic>)).toList();
   }
 
+  Future<List<Customer>> getCustomersByCompanyId(int companyId) async {
+    if (kDebugMode) {
+      print('\n🌐 GET Customers Request:');
+      print('URL: ${ApiEndpoints.customers}/company/$companyId');
+      print('Headers: $_headers\n');
+    }
+    final data = await get('${ApiEndpoints.customers}/company/$companyId');
+    if (kDebugMode) {
+      print('\n📥 GET Customers Response:');
+      print('Raw response: $data\n');
+    }
+    final list = _extractList(data);
+    return list.map((item) => Customer.fromJson(item as Map<String, dynamic>)).toList();
+  }
+
   Future<Customer> getCustomerById(int id) async {
     final data = await get('${ApiEndpoints.customers}/$id');
     final item = _extractItem(data);
@@ -337,8 +352,18 @@ class ApiClient {
   // Create customer and optionally attach companyId into payload
   Future<Customer> createCustomerWithCompany(Customer customer, {int? companyId}) async {
     final payload = Map<String, dynamic>.from(customer.toJson());
-    if (companyId != null) payload['companyId'] = companyId;
+    if (companyId != null) payload['company_id'] = companyId;
+    if (kDebugMode) {
+      print('\n🌐 POST Customer Request:');
+      print('URL: ${ApiEndpoints.customers}');
+      print('Headers: $_headers');
+      print('Payload: ${jsonEncode(payload)}\n');
+    }
     final data = await post(ApiEndpoints.customers, payload);
+    if (kDebugMode) {
+      print('\n📥 POST Customer Response:');
+      print('Raw response: $data\n');
+    }
     final item = _extractItem(data);
     return Customer.fromJson(item);
   }
