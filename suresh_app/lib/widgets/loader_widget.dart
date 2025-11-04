@@ -1,25 +1,27 @@
-import 'package:flutter/material.dart';
-import 'package:lottie/lottie.dart';
+import 'package:flutter/widgets.dart';
 
-class LoaderWidget extends StatelessWidget {
-  final double width;
-  final double height;
+class AppLoader extends StatelessWidget {
+  final double? size;
+  final BoxFit fit;
+  final AlignmentGeometry alignment;
 
-  const LoaderWidget({
-    Key? key,
-    this.width = 200,
-    this.height = 200,
-  }) : super(key: key);
+  const AppLoader({
+    super.key,
+    this.size,
+    this.fit = BoxFit.contain,
+    this.alignment = Alignment.center,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Lottie.asset(
-        'loader.gif',
-        width: width,
-        height: height,
-        fit: BoxFit.contain,
-      ),
+    final image = Image.asset(
+      'assets/gifs/loader.gif',
+      width: size,
+      height: size,
+      fit: fit,
+      alignment: alignment,
+      gaplessPlayback: true,
     );
+    return Center(child: image);
   }
 }

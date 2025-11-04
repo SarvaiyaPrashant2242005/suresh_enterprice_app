@@ -55,7 +55,7 @@ dev_dependencies:
 flutter_launcher_icons:
   android: "launcher_icon"
   ios: true
-  image_path: "assets/app_icon.jpg"
+  image_path: "assets/images/app_icon.png"
   min_sdk_android: 21
 
 # For information on the generic Dart part of this file, see the
@@ -70,5 +70,7 @@ flutter:
   uses-material-design: true
   
   assets:
-    - assets/
+    - assets/images/ally_soft_solutions.png
+    - assets/images/app_icon.png
+    - assets/gifs/loader.gif
 

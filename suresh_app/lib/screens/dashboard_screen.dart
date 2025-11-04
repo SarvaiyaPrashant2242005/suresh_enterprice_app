@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:suresh_app/screens/user_screen.dart';
 import '../providers/auth_provider_updated.dart';
 import '../widgets/sidebar_drawer.dart';
 import 'profile_screen.dart';
@@ -72,19 +73,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         );
       case 'Users':
-        return Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.people_alt, size: 80, color: Colors.grey),
-              const SizedBox(height: 16),
-              Text(
-                'Coming Soon: $_title',
-                style: const TextStyle(fontSize: 24, color: Colors.grey),
-              ),
-            ],
-          ),
-        );
+        return const UsersScreen();                                                                                                                                                                          ();
       default:
         return Center(
           child: Column(

@@ -1,278 +1,51 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../mixins/form_validation_mixin.dart';
+import '../providers/user_provider.dart';
 import '../model/user.dart';
-import '../services/api_client.dart';
-import '../utils/dialog_utils.dart';
-import '../utils/validators.dart';
-import '../widgets/form_widgets.dart';
-import '../widgets/loading_overlay.dart';
 
-class UserFormScreen extends StatefulWidget {
+class UserFormSheet extends StatefulWidget {
   final User? user;
+  final VoidCallback onSuccess;
 
-  const UserFormScreen({Key? key, this.user}) : super(key: key);
+  const UserFormSheet({
+    super.key,
+    required this.user,
+    required this.onSuccess,
+  });
 
   @override
-  _UserFormScreenState createState() => _UserFormScreenState();
+  State<UserFormSheet> createState() => _UserFormSheetState();
 }
 
-class _UserFormScreenState extends State<UserFormScreen> with FormValidationMixin {
+class _UserFormSheetState extends State<UserFormSheet> {
   final _formKey = GlobalKey<FormState>();
-  late final TextEditingController _nameController;
-  late final TextEditingController _emailController;
-  late final TextEditingController _phoneController;
-  late final TextEditingController _passwordController;
-  bool _isLoading = false;
+  final _nameController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _passwordController = TextEditingController();
+  bool _obscurePassword = true;
+
+  final List<String> _userTypes = ['Admin', 'Manager', 'Customer User', 'Sales User'];
+  final List<String> _statusOptions = ['active', 'inactive', 'suspended'];
+
   String _selectedUserType = 'Customer User';
-  String? _selectedCompanyId;
+  String _selectedStatus = 'active';
   bool _withGst = true;
   bool _withoutGst = false;
-  List<Map<String, dynamic>> _companies = [];
 
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController(text: widget.user?.name);
-    _emailController = TextEditingController(text: widget.user?.email);
-    _phoneController = TextEditingController(text: widget.user?.phone);
-    _passwordController = TextEditingController();
-
     if (widget.user != null) {
-      _selectedUserType = widget.user?.userType ?? 'Customer User';
-      _selectedCompanyId = widget.user?.companyId?.toString();
-      _withGst = widget.user?.withGst ?? true;
-      _withoutGst = widget.user?.withoutGst ?? false;
+      final u = widget.user!;
+      _nameController.text = u.name;
+      _emailController.text = u.email;
+      _phoneController.text = u.phone ?? '';
+      _selectedUserType = u.userType ?? 'Customer User';
+      _selectedStatus = u.status ?? 'active';
+      _withGst = u.withGst;
+      _withoutGst = u.withoutGst;
     }
-
-    _loadCompanies();
-  }
-
-  Future<void> _loadCompanies() async {
-    setState(() => _isLoading = true);
-    try {
-      final api = context.read<ApiClient>();
-      final companies = await api.getCompanyProfiles();
-      setState(() {
-        _companies = companies.map((c) => {
-          'id': c.id.toString(),
-          'name': c.companyName,
-        }).toList();
-      });
-    } catch (e) {
-      DialogUtils.showError(context, e.toString());
-    } finally {
-      setState(() => _isLoading = false);
-    }
-  }
-
-  bool _validateForm() {
-    if (!_formKey.currentState!.validate()) return false;
-
-    return validateFields({
-      'name': ValidationRule(
-        value: _nameController.text,
-        validator: Validators.isValidUserName,
-        errorMessage: 'Please enter a valid name',
-      ),
-      'email': ValidationRule(
-        value: _emailController.text,
-        validator: Validators.isValidEmail,
-        errorMessage: 'Please enter a valid email',
-      ),
-      'phone': ValidationRule(
-        value: _phoneController.text,
-        validator: Validators.isValidPhoneNumber,
-        errorMessage: 'Please enter a valid phone number',
-      ),
-    });
-  }
-
-  Future<void> _handleSubmit() async {
-    if (!_validateForm()) return;
-    if (!_withGst && !_withoutGst) {
-      DialogUtils.showError(context, 'Please select either With GST or Without GST');
-      return;
-    }
-
-    setState(() => _isLoading = true);
-
-    try {
-      final user = User(
-        id: widget.user?.id,
-        name: _nameController.text,
-        email: _emailController.text,
-        phone: _phoneController.text,
-        userType: _selectedUserType,
-        companyId: _selectedCompanyId != null ? int.parse(_selectedCompanyId!) : null,
-        password: _passwordController.text.isEmpty ? null : _passwordController.text,
-        withGst: _withGst,
-        withoutGst: _withoutGst,
-      );
-
-      final api = context.read<ApiClient>();
-      if (widget.user != null) {
-        await api.updateUser(widget.user!.id!, user);
-      } else {
-        await api.createUser(user);
-      }
-
-      DialogUtils.showSuccess(
-        context,
-        'User ${widget.user != null ? 'updated' : 'created'} successfully',
-      );
-      Navigator.pop(context, true);
-    } catch (e) {
-      DialogUtils.showError(context, e.toString());
-    } finally {
-      setState(() => _isLoading = false);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return LoadingOverlay(
-      isLoading: _isLoading,
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(widget.user != null ? 'Edit User' : 'Create User'),
-        ),
-        body: Form(
-          key: _formKey,
-          child: SingleChildScrollView(
-            padding: EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                FormSection(
-                  title: 'Basic Information',
-                  children: [
-                    CustomTextField(
-                      label: 'Name *',
-                      controller: _nameController,
-                      errorText: errors['name'],
-                      onChanged: (_) => validateField(
-                        'name',
-                        _nameController.text,
-                        Validators.isValidUserName,
-                        'Please enter a valid name',
-                      ),
-                    ),
-                    SizedBox(height: 16),
-                    CustomTextField(
-                      label: 'Email *',
-                      controller: _emailController,
-                      keyboardType: TextInputType.emailAddress,
-                      errorText: errors['email'],
-                      onChanged: (_) => validateField(
-                        'email',
-                        _emailController.text,
-                        Validators.isValidEmail,
-                        'Please enter a valid email',
-                      ),
-                    ),
-                    SizedBox(height: 16),
-                    CustomTextField(
-                      label: 'Phone *',
-                      controller: _phoneController,
-                      keyboardType: TextInputType.phone,
-                      errorText: errors['phone'],
-                      onChanged: (_) => validateField(
-                        'phone',
-                        _phoneController.text,
-                        Validators.isValidPhoneNumber,
-                        'Please enter a valid phone number',
-                      ),
-                    ),
-                    if (widget.user == null) ...[
-                      SizedBox(height: 16),
-                      CustomTextField(
-                        label: 'Password *',
-                        controller: _passwordController,
-                        isPassword: true,
-                      ),
-                    ],
-                  ],
-                ),
-                SizedBox(height: 16),
-                FormSection(
-                  title: 'User Settings',
-                  children: [
-                    CustomDropdown<String>(
-                      label: 'User Type',
-                      value: _selectedUserType,
-                      items: [
-                        DropdownMenuItem(
-                          value: 'Admin User',
-                          child: Text('Admin User'),
-                        ),
-                        DropdownMenuItem(
-                          value: 'Customer User',
-                          child: Text('Customer User'),
-                        ),
-                      ],
-                      onChanged: (value) {
-                        if (value != null) {
-                          setState(() => _selectedUserType = value);
-                        }
-                      },
-                    ),
-                    SizedBox(height: 16),
-                    CustomDropdown<String>(
-                      label: 'Company',
-                      value: _selectedCompanyId,
-                      items: [
-                        DropdownMenuItem<String>(
-                          value: null,
-                          child: Text('-- Select Company --'),
-                        ),
-                        ..._companies.map((company) => DropdownMenuItem(
-                          value: company['id'],
-                          child: Text(company['name']),
-                        )),
-                      ],
-                      onChanged: (value) {
-                        setState(() => _selectedCompanyId = value);
-                      },
-                    ),
-                    SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: CheckboxListTile(
-                            title: Text('With GST'),
-                            value: _withGst,
-                            onChanged: (value) {
-                              setState(() => _withGst = value ?? false);
-                            },
-                          ),
-                        ),
-                        Expanded(
-                          child: CheckboxListTile(
-                            title: Text('Without GST'),
-                            value: _withoutGst,
-                            onChanged: (value) {
-                              setState(() => _withoutGst = value ?? false);
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-                SizedBox(height: 24),
-                LoadingButton(
-                  isLoading: _isLoading,
-                  onPressed: _handleSubmit,
-                  text: widget.user != null ? 'Update User' : 'Create User',
-                  loadingText: widget.user != null ? 'Updating...' : 'Creating...',
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
   }
 
   @override
@@ -282,5 +55,195 @@ class _UserFormScreenState extends State<UserFormScreen> with FormValidationMixi
     _phoneController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    final userData = User(
+      id: widget.user?.id,
+      name: _nameController.text.trim(),
+      email: _emailController.text.trim(),
+      phone: _phoneController.text.isEmpty ? null : _phoneController.text.trim(),
+      password: widget.user == null ? _passwordController.text : null,
+      userType: _selectedUserType,
+      status: _selectedStatus,
+      withGst: _withGst,
+      withoutGst: _withoutGst,
+    );
+
+    bool success;
+    if (widget.user == null) {
+      success = await Provider.of<UserProvider>(context, listen: false)
+          .addUser(userData, _passwordController.text);
+    } else {
+      success = await Provider.of<UserProvider>(context, listen: false)
+          .updateUser(widget.user!.id.toString(), userData);
+    }
+
+    if (!mounted) return;
+    Navigator.pop(context);
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(success
+          ? widget.user == null
+              ? 'User added successfully'
+              : 'User updated successfully'
+          : 'Operation failed'),
+      backgroundColor: success ? Colors.green : Colors.red,
+    ));
+
+    if (success) widget.onSuccess();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final mediaQuery = MediaQuery.of(context);
+
+    return DraggableScrollableSheet(
+      initialChildSize: 0.85,
+      maxChildSize: 0.95,
+      minChildSize: 0.5,
+      expand: false,
+      builder: (context, scrollController) => Container(
+        decoration: BoxDecoration(
+          color: Theme.of(context).canvasColor,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        padding: EdgeInsets.only(
+          left: 16,
+          right: 16,
+          top: 24,
+          bottom: mediaQuery.viewInsets.bottom + 16,
+        ),
+        child: SingleChildScrollView(
+          controller: scrollController,
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(widget.user == null ? 'Add User' : 'Edit User',
+                        style: Theme.of(context).textTheme.headlineSmall),
+                    IconButton(
+                        onPressed: () => Navigator.pop(context),
+                        icon: const Icon(Icons.close)),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                TextFormField(
+                  controller: _nameController,
+                  decoration: const InputDecoration(
+                      labelText: 'Name', prefixIcon: Icon(Icons.person)),
+                  validator: (v) =>
+                      v == null || v.trim().isEmpty ? 'Please enter name' : null,
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _emailController,
+                  decoration: const InputDecoration(
+                      labelText: 'Email', prefixIcon: Icon(Icons.email)),
+                  keyboardType: TextInputType.emailAddress,
+                  enabled: widget.user == null,
+                  validator: (v) {
+                    if (v == null || v.isEmpty) return 'Please enter email';
+                    if (!v.contains('@')) return 'Enter valid email';
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _phoneController,
+                  decoration: const InputDecoration(
+                      labelText: 'Phone', prefixIcon: Icon(Icons.phone)),
+                  keyboardType: TextInputType.phone,
+                ),
+                if (widget.user == null) ...[
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _passwordController,
+                    obscureText: _obscurePassword,
+                    decoration: InputDecoration(
+                      labelText: 'Password',
+                      prefixIcon: const Icon(Icons.lock),
+                      suffixIcon: IconButton(
+                        icon: Icon(_obscurePassword
+                            ? Icons.visibility_off
+                            : Icons.visibility),
+                        onPressed: () =>
+                            setState(() => _obscurePassword = !_obscurePassword),
+                      ),
+                    ),
+                    validator: (v) {
+                      if (v == null || v.isEmpty) return 'Enter password';
+                      if (v.length < 6) return 'Min 6 characters';
+                      return null;
+                    },
+                  ),
+                ],
+                const SizedBox(height: 16),
+                DropdownButtonFormField<String>(
+                  value: _selectedUserType,
+                  items: _userTypes
+                      .map((type) =>
+                          DropdownMenuItem(value: type, child: Text(type)))
+                      .toList(),
+                  onChanged: (v) => setState(() => _selectedUserType = v!),
+                  decoration: const InputDecoration(
+                      labelText: 'User Type',
+                      prefixIcon: Icon(Icons.admin_panel_settings)),
+                ),
+                const SizedBox(height: 16),
+                DropdownButtonFormField<String>(
+                  value: _selectedStatus,
+                  items: _statusOptions
+                      .map((s) =>
+                          DropdownMenuItem(value: s, child: Text(s.toUpperCase())))
+                      .toList(),
+                  onChanged: (v) => setState(() => _selectedStatus = v!),
+                  decoration: const InputDecoration(
+                      labelText: 'Status', prefixIcon: Icon(Icons.info)),
+                ),
+                const SizedBox(height: 16),
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('GST Options',
+                              style: Theme.of(context).textTheme.titleMedium),
+                          CheckboxListTile(
+                            title: const Text('With GST'),
+                            value: _withGst,
+                            onChanged: (v) =>
+                                setState(() => _withGst = v ?? false),
+                            controlAffinity: ListTileControlAffinity.leading,
+                          ),
+                          CheckboxListTile(
+                            title: const Text('Without GST'),
+                            value: _withoutGst,
+                            onChanged: (v) =>
+                                setState(() => _withoutGst = v ?? false),
+                            controlAffinity: ListTileControlAffinity.leading,
+                          ),
+                        ]),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: _submit,
+                  style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16)),
+                  child: Text(widget.user == null ? 'Add User' : 'Update User'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }

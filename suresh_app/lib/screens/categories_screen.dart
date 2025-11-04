@@ -98,9 +98,9 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Categories'),
-      ),
+      // appBar: AppBar(
+      //   title: const Text('Categories'),
+      // ),
       body: Consumer<CategoryProvider>(
         builder: (context, provider, child) {
           if (provider.isLoading) {

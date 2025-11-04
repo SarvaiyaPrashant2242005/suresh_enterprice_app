@@ -6,9 +6,9 @@ import 'package:http/http.dart' as http;
 import 'endpoints.dart';
 
 class ApiService {
-  static const String baseUrl = ApiEndpoints.baseUrl;
+  final String baseUrl = ApiEndpoints.baseUrl;
 
-  static Map<String, String> defaultHeaders({String? token}) {
+  Map<String, String> defaultHeaders({String? token}) {
     return {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
@@ -16,248 +16,131 @@ class ApiService {
     };
   }
 
-  static Future<dynamic> get(
-    String endpoint, {
-    String? token,
-  }) async {
+  Future<dynamic> get(String endpoint, {String? token}) async {
     final uri = Uri.parse('$baseUrl/$endpoint');
     try {
-      if (kDebugMode) {
-        print('🌐 GET: $uri');
-      }
-      
+      if (kDebugMode) print('🌐 GET: $uri');
       final response = await http
-          .get(
-            uri,
-            headers: defaultHeaders(token: token),
-          )
+          .get(uri, headers: defaultHeaders(token: token))
           .timeout(const Duration(seconds: 15));
-      
       return _handleResponse(response);
     } on TimeoutException {
-      throw Exception('Request timed out. Please check your network/server.');
+      throw Exception('⏰ Request timed out. Please check your network/server.');
     } on SocketException catch (e) {
-      throw Exception(
-        'Network error: ${e.message}. Is the server reachable at $baseUrl?',
-      );
-    } on http.ClientException catch (e) {
-      throw Exception(
-        'Connection failed: ${e.message}. Please check:\n'
-        '1. Your internet connection\n'
-        '2. If the server is running\n'
-        '3. Firewall/VPN settings',
-      );
+      throw Exception('🌐 Network error: ${e.message}');
     } catch (e) {
-      throw Exception('Error: ${e.toString()}');
+      throw Exception('⚠️ Error: ${e.toString()}');
     }
   }
 
-  static Future<dynamic> post(
-    String endpoint,
-    Map<String, dynamic> data, {
-    String? token,
-  }) async {
+  Future<dynamic> post(String endpoint, Map<String, dynamic> data,
+      {String? token}) async {
     final uri = Uri.parse('$baseUrl/$endpoint');
     try {
       if (kDebugMode) {
         print('🌐 POST: $uri');
         print('📤 Body: ${jsonEncode(data)}');
       }
-      
       final response = await http
-          .post(
-            uri,
-            headers: defaultHeaders(token: token),
-            body: jsonEncode(data),
-          )
+          .post(uri,
+              headers: defaultHeaders(token: token), body: jsonEncode(data))
           .timeout(const Duration(seconds: 15));
-      
       return _handleResponse(response);
     } on TimeoutException {
-      throw Exception('Request timed out. Please check your network/server.');
+      throw Exception('⏰ Request timed out. Please check your network/server.');
     } on SocketException catch (e) {
-      throw Exception(
-        'Network error: ${e.message}. Is the server reachable at $baseUrl?',
-      );
-    } on http.ClientException catch (e) {
-      throw Exception(
-        'Connection failed: ${e.message}. Please check:\n'
-        '1. Your internet connection\n'
-        '2. If the server is running\n'
-        '3. Firewall/VPN settings',
-      );
+      throw Exception('🌐 Network error: ${e.message}');
     } catch (e) {
-      throw Exception('Error: ${e.toString()}');
+      throw Exception('⚠️ Error: ${e.toString()}');
     }
   }
 
-  static Future<dynamic> put(
-    String endpoint,
-    Map<String, dynamic> data, {
-    String? token,
-  }) async {
+  Future<dynamic> put(String endpoint, Map<String, dynamic> data,
+      {String? token}) async {
     final uri = Uri.parse('$baseUrl/$endpoint');
     try {
       if (kDebugMode) {
         print('🌐 PUT: $uri');
         print('📤 Body: ${jsonEncode(data)}');
       }
-      
       final response = await http
-          .put(
-            uri,
-            headers: defaultHeaders(token: token),
-            body: jsonEncode(data),
-          )
+          .put(uri,
+              headers: defaultHeaders(token: token), body: jsonEncode(data))
           .timeout(const Duration(seconds: 15));
-      
       return _handleResponse(response);
     } on TimeoutException {
-      throw Exception('Request timed out. Please check your network/server.');
+      throw Exception('⏰ Request timed out. Please check your network/server.');
     } on SocketException catch (e) {
-      throw Exception(
-        'Network error: ${e.message}. Is the server reachable at $baseUrl?',
-      );
-    } on http.ClientException catch (e) {
-      throw Exception(
-        'Connection failed: ${e.message}. Please check:\n'
-        '1. Your internet connection\n'
-        '2. If the server is running\n'
-        '3. Firewall/VPN settings',
-      );
+      throw Exception('🌐 Network error: ${e.message}');
     } catch (e) {
-      throw Exception('Error: ${e.toString()}');
+      throw Exception('⚠️ Error: ${e.toString()}');
     }
   }
 
-  static Future<dynamic> delete(
-    String endpoint, {
-    String? token,
-  }) async {
+  Future<dynamic> delete(String endpoint, {String? token}) async {
     final uri = Uri.parse('$baseUrl/$endpoint');
     try {
-      if (kDebugMode) {
-        print('🌐 DELETE: $uri');
-      }
-      
+      if (kDebugMode) print('🌐 DELETE: $uri');
       final response = await http
-          .delete(
-            uri,
-            headers: defaultHeaders(token: token),
-          )
+          .delete(uri, headers: defaultHeaders(token: token))
           .timeout(const Duration(seconds: 15));
-      
       return _handleResponse(response);
     } on TimeoutException {
-      throw Exception('Request timed out. Please check your network/server.');
+      throw Exception('⏰ Request timed out. Please check your network/server.');
     } on SocketException catch (e) {
-      throw Exception(
-        'Network error: ${e.message}. Is the server reachable at $baseUrl?',
-      );
-    } on http.ClientException catch (e) {
-      throw Exception(
-        'Connection failed: ${e.message}. Please check:\n'
-        '1. Your internet connection\n'
-        '2. If the server is running\n'
-        '3. Firewall/VPN settings',
-      );
+      throw Exception('🌐 Network error: ${e.message}');
     } catch (e) {
-      throw Exception('Error: ${e.toString()}');
+      throw Exception('⚠️ Error: ${e.toString()}');
     }
   }
 
-  static dynamic _handleResponse(http.Response response) {
+  dynamic _handleResponse(http.Response response) {
     if (kDebugMode) {
       print('📊 Status: ${response.statusCode}');
       print('📋 Content-Type: ${response.headers['content-type']}');
       print('📦 Body Length: ${response.body.length}');
-      print('📥 Raw Body: ${response.body.substring(0, response.body.length > 500 ? 500 : response.body.length)}');
+      try {
+        final preview = response.body.length > 500
+            ? response.body.substring(0, 500)
+            : response.body;
+        print('📥 Body: $preview');
+      } catch (_) {
+        print('⚠️ Could not preview body');
+      }
     }
 
-    // Check if response is empty
     if (response.body.isEmpty) {
-      if (kDebugMode) {
-        print('⚠️ Empty response body');
-      }
-      
       if (response.statusCode == 200 || response.statusCode == 201) {
-        return {};
+        return {'success': true, 'data': {}};
       }
-      
-      throw Exception('Empty response from server (Status: ${response.statusCode})');
+      throw Exception('Empty response from server');
     }
 
-    // Check content type
     final contentType = response.headers['content-type'] ?? '';
     final isJson = contentType.contains('application/json');
-
-    if (kDebugMode) {
-      print('🔍 Is JSON: $isJson');
-    }
-
-    // If not JSON, check if it's HTML (error page)
-    if (!isJson && response.body.trim().startsWith('<')) {
-      if (kDebugMode) {
-        print('❌ Server returned HTML instead of JSON');
-      }
-      throw Exception('Server error: Received HTML instead of JSON (Status: ${response.statusCode})');
-    }
-
-    // Try to parse JSON
     dynamic parsed;
-    if (isJson || response.body.trim().startsWith('{') || response.body.trim().startsWith('[')) {
+
+    if (isJson ||
+        response.body.trim().startsWith('{') ||
+        response.body.trim().startsWith('[')) {
       try {
         parsed = jsonDecode(response.body);
-        if (kDebugMode) {
-          print('✅ JSON parsed successfully');
-        }
-      } on FormatException catch (e) {
-        if (kDebugMode) {
-          print('❌ JSON parsing failed: $e');
-          print('Problematic content: ${response.body}');
-        }
-        throw Exception('Invalid JSON response from server');
+      } catch (e) {
+        throw Exception('Invalid JSON response: $e');
       }
     } else {
-      if (kDebugMode) {
-        print('⚠️ Response is not JSON');
-      }
       parsed = response.body;
     }
 
-    // Handle success responses
     if (response.statusCode == 200 || response.statusCode == 201) {
-      if (kDebugMode) {
-        print('✅ Success response');
-      }
-      return parsed is Map || parsed is List ? parsed : {'data': parsed};
+      return parsed is Map
+          ? {'success': true, ...parsed}
+          : {'success': true, 'data': parsed};
     }
 
-    // Handle error responses
-    if (kDebugMode) {
-      print('❌ Error response: ${response.statusCode}');
-    }
-
-    String message;
-    if (parsed is Map) {
-      message = parsed['message']?.toString() ?? 
-                parsed['error']?.toString() ?? 
-                'Request failed with status: ${response.statusCode}';
-    } else {
-      message = 'Request failed with status: ${response.statusCode}';
-    }
-
+    final message = parsed is Map
+        ? (parsed['message'] ?? parsed['error'] ?? 'Unknown error')
+        : 'Request failed (${response.statusCode})';
     throw Exception(message);
-  }
-
-  static dynamic _tryParseJson(String text) {
-    try {
-      return jsonDecode(text);
-    } catch (e) {
-      if (kDebugMode) {
-        print('⚠️ JSON parse attempt failed: $e');
-      }
-      return text;
-    }
   }
 }
