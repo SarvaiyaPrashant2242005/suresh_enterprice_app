@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../model/product.dart';
+import '../model/category.dart';
 import '../providers/product_provider.dart';
 import '../providers/category_provider.dart';
 import '../providers/auth_provider_updated.dart';
@@ -47,15 +48,15 @@ class _ProductsScreenState extends State<ProductsScreen> {
     }
   }
 
-  void _showAddEditDialog({Product? product}) {
+  void _showAddEditBottomSheet({Product? product}) {
     _editingProduct = product;
     if (product != null) {
       _nameController.text = product.name;
       _descriptionController.text = product.description ?? '';
       _priceController.text = product.price.toString();
       _selectedCategoryId = product.categoryId;
-          _hsnController.text = product.hsnCode ?? '';
-          _uomController.text = product.uom ?? '';
+      _hsnController.text = product.hsnCode ?? '';
+      _uomController.text = product.uom ?? '';
       _isActive = product.isActive ?? true;
     } else {
       _nameController.clear();
@@ -67,129 +68,26 @@ class _ProductsScreenState extends State<ProductsScreen> {
       _isActive = true;
     }
 
-    showDialog(
+    showModalBottomSheet(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(product == null ? 'Add Product' : 'Edit Product'),
-        content: Form(
-          key: _formKey,
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextFormField(
-                  controller: _nameController,
-                  decoration: const InputDecoration(labelText: 'Name'),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter a name';
-                    }
-                    return null;
-                  },
-                ),
-                TextFormField(
-                  controller: _descriptionController,
-                  decoration: const InputDecoration(labelText: 'Description'),
-                ),
-                TextFormField(
-                  controller: _hsnController,
-                  decoration: const InputDecoration(labelText: 'HSN Code'),
-                ),
-                TextFormField(
-                  controller: _uomController,
-                  decoration: const InputDecoration(labelText: 'UOM'),
-                ),
-                const SizedBox(height: 8),
-                SwitchListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: const Text('Active'),
-                  value: _isActive,
-                  onChanged: (v) => setState(() => _isActive = v),
-                ),
-                TextFormField(
-                  controller: _priceController,
-                  decoration: const InputDecoration(labelText: 'Price'),
-                  keyboardType: TextInputType.number,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter a price';
-                    }
-                    if (double.tryParse(value) == null) {
-                      return 'Please enter a valid number';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-               DropdownButtonFormField<int>(
-  value: _selectedCategoryId,
-  decoration: const InputDecoration(labelText: 'Category'),
-  items: (_categoryProvider.categories as List)
-      .map((category) {
-        return DropdownMenuItem<int>(
-          value: category.id,
-          child: Text(category.name),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return _ProductFormSheet(
+          formKey: _formKey,
+          nameController: _nameController,
+          descriptionController: _descriptionController,
+          priceController: _priceController,
+          hsnController: _hsnController,
+          uomController: _uomController,
+          selectedCategoryId: _selectedCategoryId,
+          isActive: _isActive,
+          product: product,
+          categories: _categoryProvider.categories,
+          companyId: _companyId,
         );
-      })
-      .toList(),
-  onChanged: (value) {
-    setState(() {
-      _selectedCategoryId = value;
-    });
-  },
-  validator: (value) {
-    if (value == null) {
-      return 'Please select a category';
-    }
-    return null;
-  },
-),
-              ],
-            ),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: _saveProduct,
-            child: const Text('Save'),
-          ),
-        ],
-      ),
+      },
     );
-  }
-
-  Future<void> _saveProduct() async {
-    if (_formKey.currentState!.validate()) {
-      final name = _nameController.text;
-      final description = _descriptionController.text.isNotEmpty ? _descriptionController.text : null;
-      final price = double.parse(_priceController.text);
-      
-      final product = Product(
-        id: _editingProduct?.id,
-        name: name,
-        description: description,
-        price: price,
-        categoryId: _selectedCategoryId,
-        hsnCode: _hsnController.text.isNotEmpty ? _hsnController.text : null,
-            uom: _uomController.text.isNotEmpty ? _uomController.text : null,
-        isActive: _isActive,
-        companyId: _companyId,
-      );
-
-      if (_editingProduct == null) {
-        await _productProvider.createProduct(product);
-      } else {
-        await _productProvider.updateProduct(_editingProduct!.id!, product);
-      }
-
-      if (mounted) {
-        Navigator.of(context).pop();
-      }
-    }
   }
 
   Future<void> _confirmDelete(Product product) async {
@@ -266,7 +164,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
                   const Text('No products found'),
                   const SizedBox(height: 16),
                   ElevatedButton(
-                    onPressed: () => _showAddEditDialog(),
+                    onPressed: () => _showAddEditBottomSheet(),
                     child: const Text('Add Product'),
                   ),
                 ],
@@ -296,7 +194,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
                     children: [
                       IconButton(
                         icon: const Icon(Icons.edit),
-                        onPressed: () => _showAddEditDialog(product: product),
+                        onPressed: () => _showAddEditBottomSheet(product: product),
                       ),
                       IconButton(
                         icon: const Icon(Icons.delete),
@@ -311,9 +209,258 @@ class _ProductsScreenState extends State<ProductsScreen> {
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _showAddEditDialog(),
+        onPressed: () => _showAddEditBottomSheet(),
         child: const Icon(Icons.add),
       ),
+    );
+  }
+}
+
+class _ProductFormSheet extends StatefulWidget {
+  final GlobalKey<FormState> formKey;
+  final TextEditingController nameController;
+  final TextEditingController descriptionController;
+  final TextEditingController priceController;
+  final TextEditingController hsnController;
+  final TextEditingController uomController;
+  final int? selectedCategoryId;
+  final bool isActive;
+  final Product? product;
+  final List<Category> categories;
+  final int? companyId;
+
+  const _ProductFormSheet({
+    required this.formKey,
+    required this.nameController,
+    required this.descriptionController,
+    required this.priceController,
+    required this.hsnController,
+    required this.uomController,
+    required this.selectedCategoryId,
+    required this.isActive,
+    required this.product,
+    required this.categories,
+    required this.companyId,
+  });
+
+  @override
+  State<_ProductFormSheet> createState() => _ProductFormSheetState();
+}
+
+class _ProductFormSheetState extends State<_ProductFormSheet> {
+  int? _selectedCategoryId;
+  bool _isActive = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedCategoryId = widget.selectedCategoryId;
+    _isActive = widget.isActive;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final mediaQuery = MediaQuery.of(context);
+    return DraggableScrollableSheet(
+      initialChildSize: 0.85,
+      minChildSize: 0.5,
+      maxChildSize: 0.95,
+      expand: false,
+      builder: (context, scrollController) {
+        return Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).canvasColor,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+            boxShadow: [BoxShadow(blurRadius: 8, color: Colors.black12)],
+          ),
+          padding: EdgeInsets.only(
+            left: 16,
+            right: 16,
+            top: 24,
+            bottom: mediaQuery.viewInsets.bottom + 16,
+          ),
+          child: SingleChildScrollView(
+            controller: scrollController,
+            child: Form(
+              key: widget.formKey,
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final isWide = constraints.maxWidth > 600;
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(
+                        widget.product == null ? 'Add Product' : 'Edit Product',
+                        style: Theme.of(context).textTheme.headlineSmall,
+                      ),
+                      const SizedBox(height: 24),
+                      Wrap(
+                        runSpacing: 16,
+                        spacing: 16,
+                        children: [
+                          SizedBox(
+                            width: isWide ? (constraints.maxWidth / 2) - 24 : double.infinity,
+                            child: TextFormField(
+                              controller: widget.nameController,
+                              decoration: const InputDecoration(
+                                labelText: 'Product Name',
+                                hintText: 'Enter product name',
+                                border: OutlineInputBorder(),
+                              ),
+                              validator: (value) {
+                                if (value == null || value.trim().isEmpty) {
+                                  return 'Please enter product name';
+                                }
+                                return null;
+                              },
+                            ),
+                          ),
+                          SizedBox(
+                            width: isWide ? (constraints.maxWidth / 2) - 24 : double.infinity,
+                            child: TextFormField(
+                              controller: widget.descriptionController,
+                              decoration: const InputDecoration(
+                                labelText: 'Description',
+                                hintText: 'Enter description',
+                                border: OutlineInputBorder(),
+                              ),
+                              maxLines: 2,
+                            ),
+                          ),
+                          SizedBox(
+                            width: isWide ? (constraints.maxWidth / 2) - 24 : double.infinity,
+                            child: TextFormField(
+                              controller: widget.hsnController,
+                              decoration: const InputDecoration(
+                                labelText: 'HSN Code',
+                                hintText: 'Enter HSN code',
+                                border: OutlineInputBorder(),
+                              ),
+                            ),
+                          ),
+                          SizedBox(
+                            width: isWide ? (constraints.maxWidth / 2) - 24 : double.infinity,
+                            child: TextFormField(
+                              controller: widget.uomController,
+                              decoration: const InputDecoration(
+                                labelText: 'UOM',
+                                hintText: 'Unit of measurement',
+                                border: OutlineInputBorder(),
+                              ),
+                            ),
+                          ),
+                          SizedBox(
+                            width: isWide ? (constraints.maxWidth / 2) - 24 : double.infinity,
+                            child: TextFormField(
+                              controller: widget.priceController,
+                              decoration: const InputDecoration(
+                                labelText: 'Price',
+                                hintText: '0.00',
+                                border: OutlineInputBorder(),
+                              ),
+                              keyboardType: TextInputType.numberWithOptions(decimal: true),
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Please enter price';
+                                }
+                                if (double.tryParse(value) == null) {
+                                  return 'Please enter a valid number';
+                                }
+                                return null;
+                              },
+                            ),
+                          ),
+                          SizedBox(
+                            width: isWide ? (constraints.maxWidth / 2) - 24 : double.infinity,
+                            child: DropdownButtonFormField<int>(
+                              value: _selectedCategoryId,
+                              decoration: const InputDecoration(
+                                labelText: 'Category',
+                                border: OutlineInputBorder(),
+                              ),
+                              items: widget.categories.map((category) {
+                                return DropdownMenuItem<int>(
+                                  value: category.id,
+                                  child: Text(category.name),
+                                );
+                              }).toList(),
+                              onChanged: (value) {
+                                setState(() {
+                                  _selectedCategoryId = value;
+                                });
+                              },
+                              validator: (value) {
+                                if (value == null) {
+                                  return 'Please select a category';
+                                }
+                                return null;
+                              },
+                            ),
+                          ),
+                          SizedBox(
+                            width: isWide ? (constraints.maxWidth / 2) - 24 : double.infinity,
+                            child: Row(
+                              children: [
+                                Switch(
+                                  value: _isActive,
+                                  onChanged: (val) {
+                                    setState(() {
+                                      _isActive = val;
+                                    });
+                                  },
+                                ),
+                                const SizedBox(width: 8),
+                                const Text('Active'),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 32),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            textStyle: const TextStyle(fontSize: 18),
+                          ),
+                          onPressed: () async {
+                            if (widget.formKey.currentState!.validate()) {
+                              final productProvider = Provider.of<ProductProvider>(context, listen: false);
+                              final product = Product(
+                                id: widget.product?.id,
+                                name: widget.nameController.text,
+                                description: widget.descriptionController.text.isEmpty ? null : widget.descriptionController.text,
+                                price: double.parse(widget.priceController.text),
+                                categoryId: _selectedCategoryId,
+                                hsnCode: widget.hsnController.text.isEmpty ? null : widget.hsnController.text,
+                                uom: widget.uomController.text.isEmpty ? null : widget.uomController.text,
+                                isActive: _isActive,
+                                companyId: widget.companyId,
+                              );
+
+                              if (widget.product == null) {
+                                await productProvider.createProduct(product);
+                              } else {
+                                await productProvider.updateProduct(widget.product!.id!, product);
+                              }
+
+                              if (mounted) {
+                                Navigator.of(context).pop();
+                              }
+                            }
+                          },
+                          child: Text(widget.product == null ? 'Add Product' : 'Update Product'),
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

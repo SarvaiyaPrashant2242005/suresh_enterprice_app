@@ -48,7 +48,7 @@ class MyApp extends StatelessWidget {
           create: (_) => CategoryProvider(apiClient),
         ),
         ChangeNotifierProvider(
-          create: (_) => ProductProvider(apiClient),
+          create: (_) => ProductProvider(apiClient)
         ),
         ChangeNotifierProvider(
           create: (_) => CustomerProvider(apiClient),
@@ -56,6 +56,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(
           create: (_) => GstMasterProvider(apiClient),
         ),
+               
       ],
       child: MaterialApp(
         title: 'Suresh Enterprise',

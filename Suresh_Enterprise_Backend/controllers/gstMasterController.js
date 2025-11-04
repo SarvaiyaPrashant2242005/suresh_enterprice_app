@@ -47,7 +47,7 @@ exports.createGstMasters = async (req, res, next) => {
         res.status(201).json({
             success: true,
             message: "GST Master created successfully.",
-            data: gstMaster
+            data: gstMaster.toJSON()
         });
     } catch (error) {
         console.error("Error creating GST Master:", error);
@@ -57,10 +57,14 @@ exports.createGstMasters = async (req, res, next) => {
 
 exports.getAllGstMasters = async (req, res, next) => {
     try {
-        const gstMastersList = await gstMasters.findAll();
+        const gstMastersList = await gstMasters.findAll({
+            raw: false // Keep as Sequelize instances
+        });
+        // Convert to plain JSON objects
+        const plainData = gstMastersList.map(item => item.toJSON());
         res.status(200).json({
             success: true,
-            data: gstMastersList
+            data: plainData
         });
     } catch (error) {
         console.error("Error fetching GST Masters:", error);
@@ -79,7 +83,7 @@ exports.getGstMasterById = async (req, res, next) => {
         }
         res.status(200).json({
             success: true,
-            data: gstMaster
+            data: gstMaster.toJSON()
         });
     } catch (error) {
         console.error("Error fetching GST Master by id:", error);
@@ -141,10 +145,12 @@ exports.updateGstMasterById = async (req, res, next) => {
             });
         }
 
+        // Reload to get updated data
+        await gstMaster.reload();
         res.status(200).json({
             success: true,
             message: "GST Master updated successfully.",
-            data: gstMaster
+            data: gstMaster.toJSON()
         });
     } catch (error) {
         console.error("Error updating GST Master:", error);

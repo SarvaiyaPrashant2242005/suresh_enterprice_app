@@ -35,11 +35,11 @@ class _GstMasterBottomSheetState extends State<GstMasterBottomSheet> {
   void initState() {
     super.initState();
     if (widget.gstMaster != null) {
-      final totalGst = widget.gstMaster!.cgst + widget.gstMaster!.sgst;
-      _gstRateController.text = totalGst.toString();
-      _sgstController.text = widget.gstMaster!.sgst.toString();
-      _cgstController.text = widget.gstMaster!.cgst.toString();
-      _igstController.text = widget.gstMaster!.igst.toString();
+      _gstRateController.text = widget.gstMaster!.gstRate.toString();
+      _sgstController.text = widget.gstMaster!.sgstRate.toString();
+      _cgstController.text = widget.gstMaster!.cgstRate.toString();
+      _igstController.text = widget.gstMaster!.igstRate.toString();
+      _isActive = widget.gstMaster!.isActive;
     }
   }
 
@@ -72,11 +72,11 @@ class _GstMasterBottomSheetState extends State<GstMasterBottomSheet> {
 
       final gstMaster = GstMaster(
         id: widget.gstMaster?.id,
-        hsnCode: '', // Empty since HSN is removed
-        cgst: double.parse(_cgstController.text),
-        sgst: double.parse(_sgstController.text),
-        igst: double.parse(_igstController.text),
-        description: null,
+        gstRate: double.parse(_gstRateController.text),
+        cgstRate: double.parse(_cgstController.text),
+        sgstRate: double.parse(_sgstController.text),
+        igstRate: double.parse(_igstController.text),
+        isActive: _isActive,
       );
 
       try {

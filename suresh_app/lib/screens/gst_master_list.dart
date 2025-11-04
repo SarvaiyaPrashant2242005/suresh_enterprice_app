@@ -26,7 +26,7 @@ class _GstMasterListState extends State<GstMasterList> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Confirm Delete'),
-        content: Text('Are you sure you want to delete ${gstMaster.hsnCode}?'),
+        content: Text('Are you sure you want to delete GST Rate ${gstMaster.gstRate}%?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
@@ -97,15 +97,20 @@ class _GstMasterListState extends State<GstMasterList> {
               return Card(
                 margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: ListTile(
-                  title: Text('HSN Code: ${gstMaster.hsnCode}'),
+                  title: Text('GST Rate: ${gstMaster.gstRate.toStringAsFixed(2)}%'),
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('CGST: ${gstMaster.cgst}%'),
-                      Text('SGST: ${gstMaster.sgst}%'),
-                      Text('IGST: ${gstMaster.igst}%'),
-                      if (gstMaster.description != null)
-                        Text('Description: ${gstMaster.description}'),
+                      Text('CGST Rate: ${gstMaster.cgstRate.toStringAsFixed(2)}%'),
+                      Text('SGST Rate: ${gstMaster.sgstRate.toStringAsFixed(2)}%'),
+                      Text('IGST Rate: ${gstMaster.igstRate.toStringAsFixed(2)}%'),
+                      Text(
+                        'Status: ${gstMaster.isActive ? 'Active' : 'Inactive'}',
+                        style: TextStyle(
+                          color: gstMaster.isActive ? Colors.green : Colors.red,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
                     ],
                   ),
                   trailing: Row(

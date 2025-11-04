@@ -18,6 +18,24 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   String _title = 'Home';
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  
+  @override
+  void initState() {
+    super.initState();
+    // Check authentication status
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkAuthStatus();
+    });
+  }
+
+  void _checkAuthStatus() {
+    final auth = Provider.of<AuthProvider>(context, listen: false);
+    if (auth.authData == null || auth.token == null) {
+      // User is not authenticated, navigate to login
+      Navigator.of(context).pushReplacementNamed('/login');
+    }
+  }
   
   void _onSelect(String title) {
     setState(() {
@@ -39,11 +57,46 @@ class _DashboardScreenState extends State<DashboardScreen> {
         return const CustomersScreen();
       case 'GST Master':
         return const GstMasterScreen();
+      case 'Invoices':
+        return Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.receipt_long, size: 80, color: Colors.grey),
+              const SizedBox(height: 16),
+              Text(
+                'Coming Soon: $_title',
+                style: const TextStyle(fontSize: 24, color: Colors.grey),
+              ),
+            ],
+          ),
+        );
+      case 'Users':
+        return Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.people_alt, size: 80, color: Colors.grey),
+              const SizedBox(height: 16),
+              Text(
+                'Coming Soon: $_title',
+                style: const TextStyle(fontSize: 24, color: Colors.grey),
+              ),
+            ],
+          ),
+        );
       default:
         return Center(
-          child: Text(
-            'Coming Soon: $_title',
-            style: const TextStyle(fontSize: 24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.info_outline, size: 80, color: Colors.grey),
+              const SizedBox(height: 16),
+              Text(
+                'Coming Soon: $_title',
+                style: const TextStyle(fontSize: 24, color: Colors.grey),
+              ),
+            ],
           ),
         );
     }
@@ -51,47 +104,34 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final auth = Provider.of<AuthProvider>(context);
-    final userType = auth.authData?['user']?['userType'] ?? 'User';
-    
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(_title),
-      ),
-      drawer: SidebarDrawer(onSelect: _onSelect),
-      body: _getScreenForTitle(_title),
-    );
-  }
-}
-
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    final auth = Provider.of<AuthProvider>(context);
-    final userName = auth.authData?['user']?['name'] ?? 'User';
-    
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(
-            Icons.dashboard,
-            size: 100,
-            color: Colors.blue,
+    return WillPopScope(
+      onWillPop: () async {
+        // Handle back button press
+        if (_title != 'Home') {
+          setState(() {
+            _title = 'Home';
+          });
+          return false;
+        }
+        return true;
+      },
+      child: Scaffold(
+        key: _scaffoldKey,
+        appBar: AppBar(
+          title: Text(_title),
+          elevation: 2,
+          leading: IconButton(
+            icon: const Icon(Icons.menu),
+            onPressed: () {
+              _scaffoldKey.currentState?.openDrawer();
+            },
           ),
-          const SizedBox(height: 20),
-          Text(
-            'Welcome, $userName!',
-            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 10),
-          const Text(
-            'Select an option from the sidebar to get started',
-            style: TextStyle(fontSize: 16),
-          ),
-        ],
+        ),
+        drawer: SidebarDrawer(
+          onSelect: _onSelect,
+          currentSelection: _title,
+        ),
+        body: _getScreenForTitle(_title),
       ),
     );
   }

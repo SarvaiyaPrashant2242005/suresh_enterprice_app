@@ -42,7 +42,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     await _categoryProvider.fetchCategories(companyId: companyId, userType: userType);
   }
 
-  void _showAddEditDialog({Category? category}) {
+  void _showAddEditBottomSheet({Category? category}) {
     _editingCategory = category;
     if (category != null) {
       _nameController.text = category.name;
@@ -50,61 +50,18 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
       _nameController.clear();
     }
 
-    showDialog(
+    showModalBottomSheet(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(category == null ? 'Add Category' : 'Edit Category'),
-        content: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextFormField(
-                controller: _nameController,
-                decoration: const InputDecoration(labelText: 'Name'),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter a name';
-                  }
-                  return null;
-                },
-              ),
-             
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: _saveCategory,
-            child: const Text('Save'),
-          ),
-        ],
-      ),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return _CategoryFormSheet(
+          formKey: _formKey,
+          nameController: _nameController,
+          category: category,
+        );
+      },
     );
-  }
-
-  Future<void> _saveCategory() async {
-    if (_formKey.currentState!.validate()) {
-      final name = _nameController.text;
-      final category = Category(
-        id: _editingCategory?.id,
-        name: name,
-      );
-
-      if (_editingCategory == null) {
-        await _categoryProvider.createCategory(category);
-      } else {
-        await _categoryProvider.updateCategory(_editingCategory!.id!, category);
-      }
-
-      if (mounted) {
-        Navigator.of(context).pop();
-      }
-    }
   }
 
   Future<void> _confirmDelete(Category category) async {
@@ -178,7 +135,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                   const Text('No categories found'),
                   const SizedBox(height: 16),
                   ElevatedButton(
-                    onPressed: () => _showAddEditDialog(),
+                    onPressed: () => _showAddEditBottomSheet(),
                     child: const Text('Add Category'),
                   ),
                 ],
@@ -199,7 +156,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                     children: [
                       IconButton(
                         icon: const Icon(Icons.edit),
-                        onPressed: () => _showAddEditDialog(category: category),
+                        onPressed: () => _showAddEditBottomSheet(category: category),
                       ),
                       IconButton(
                         icon: const Icon(Icons.delete),
@@ -214,9 +171,112 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _showAddEditDialog(),
+        onPressed: () => _showAddEditBottomSheet(),
         child: const Icon(Icons.add),
       ),
+    );
+  }
+}
+
+class _CategoryFormSheet extends StatefulWidget {
+  final GlobalKey<FormState> formKey;
+  final TextEditingController nameController;
+  final Category? category;
+
+  const _CategoryFormSheet({
+    required this.formKey,
+    required this.nameController,
+    required this.category,
+  });
+
+  @override
+  State<_CategoryFormSheet> createState() => _CategoryFormSheetState();
+}
+
+class _CategoryFormSheetState extends State<_CategoryFormSheet> {
+  @override
+  Widget build(BuildContext context) {
+    final mediaQuery = MediaQuery.of(context);
+    return DraggableScrollableSheet(
+      initialChildSize: 0.4,
+      minChildSize: 0.3,
+      maxChildSize: 0.9,
+      expand: false,
+      builder: (context, scrollController) {
+        return Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).canvasColor,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+            boxShadow: [BoxShadow(blurRadius: 8, color: Colors.black12)],
+          ),
+          padding: EdgeInsets.only(
+            left: 16,
+            right: 16,
+            top: 24,
+            bottom: mediaQuery.viewInsets.bottom + 16,
+          ),
+          child: SingleChildScrollView(
+            controller: scrollController,
+            child: Form(
+              key: widget.formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    widget.category == null ? 'Add Category' : 'Edit Category',
+                    style: Theme.of(context).textTheme.headlineSmall,
+                  ),
+                  const SizedBox(height: 24),
+                  TextFormField(
+                    controller: widget.nameController,
+                    decoration: const InputDecoration(
+                      labelText: 'Category Name',
+                      hintText: 'Enter category name',
+                      border: OutlineInputBorder(),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'Please enter category name';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 32),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        textStyle: const TextStyle(fontSize: 18),
+                      ),
+                      onPressed: () async {
+                        if (widget.formKey.currentState!.validate()) {
+                          final categoryProvider = Provider.of<CategoryProvider>(context, listen: false);
+                          final category = Category(
+                            id: widget.category?.id,
+                            name: widget.nameController.text,
+                          );
+
+                          if (widget.category == null) {
+                            await categoryProvider.createCategory(category);
+                          } else {
+                            await categoryProvider.updateCategory(widget.category!.id!, category);
+                          }
+
+                          if (mounted) {
+                            Navigator.of(context).pop();
+                          }
+                        }
+                      },
+                      child: Text(widget.category == null ? 'Add Category' : 'Update Category'),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

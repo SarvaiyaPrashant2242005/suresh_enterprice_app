@@ -19,56 +19,54 @@ class GstMasterFormScreen extends StatefulWidget {
 
 class _GstMasterFormScreenState extends State<GstMasterFormScreen> with FormValidationMixin {
   final _formKey = GlobalKey<FormState>();
+  late final TextEditingController _gstRateController;
   late final TextEditingController _cgstController;
   late final TextEditingController _sgstController;
   late final TextEditingController _igstController;
-  late final TextEditingController _hsnCodeController;
-  late final TextEditingController _descriptionController;
+  bool _isActive = true;
   bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
+    _gstRateController = TextEditingController(
+      text: widget.gstMaster?.gstRate?.toString() ?? '',
+    );
     _cgstController = TextEditingController(
-      text: widget.gstMaster?.cgst?.toString() ?? '',
+      text: widget.gstMaster?.cgstRate?.toString() ?? '',
     );
     _sgstController = TextEditingController(
-      text: widget.gstMaster?.sgst?.toString() ?? '',
+      text: widget.gstMaster?.sgstRate?.toString() ?? '',
     );
     _igstController = TextEditingController(
-      text: widget.gstMaster?.igst?.toString() ?? '',
+      text: widget.gstMaster?.igstRate?.toString() ?? '',
     );
-    _hsnCodeController = TextEditingController(
-      text: widget.gstMaster?.hsnCode ?? '',
-    );
-    _descriptionController = TextEditingController(
-      text: widget.gstMaster?.description ?? '',
-    );
+    _isActive = widget.gstMaster?.isActive ?? true;
   }
 
   bool _validateForm() {
     if (!_formKey.currentState!.validate()) return false;
 
     return validateFields({
-      'hsnCode': ValidationRule(
-        value: _hsnCodeController.text,
-        validator: Validators.isValidHsnCode,
-        errorMessage: 'Please enter a valid HSN code',
+      'gstRate': ValidationRule(
+        value: _gstRateController.text,
+        validator: Validators.isValidPrice,
+        errorMessage: 'Please enter a valid GST rate',
       ),
-      'cgst': ValidationRule(
+      'cgstRate': ValidationRule(
         value: _cgstController.text,
         validator: Validators.isValidPrice,
-        errorMessage: 'Please enter a valid CGST percentage',
+        errorMessage: 'Please enter a valid CGST rate',
       ),
-      'sgst': ValidationRule(
+      'sgstRate': ValidationRule(
         value: _sgstController.text,
         validator: Validators.isValidPrice,
-        errorMessage: 'Please enter a valid SGST percentage',
+        errorMessage: 'Please enter a valid SGST rate',
       ),
-      'igst': ValidationRule(
+      'igstRate': ValidationRule(
         value: _igstController.text,
         validator: Validators.isValidPrice,
-        errorMessage: 'Please enter a valid IGST percentage',
+        errorMessage: 'Please enter a valid IGST rate',
       ),
     });
   }
@@ -81,11 +79,11 @@ class _GstMasterFormScreenState extends State<GstMasterFormScreen> with FormVali
     try {
       final gstMaster = GstMaster(
         id: widget.gstMaster?.id,
-        hsnCode: _hsnCodeController.text,
-        cgst: double.parse(_cgstController.text),
-        sgst: double.parse(_sgstController.text),
-        igst: double.parse(_igstController.text),
-        description: _descriptionController.text.isEmpty ? null : _descriptionController.text,
+        gstRate: double.parse(_gstRateController.text),
+        cgstRate: double.parse(_cgstController.text),
+        sgstRate: double.parse(_sgstController.text),
+        igstRate: double.parse(_igstController.text),
+        isActive: _isActive,
       );
 
       final api = context.read<ApiClient>();
@@ -126,15 +124,15 @@ class _GstMasterFormScreenState extends State<GstMasterFormScreen> with FormVali
                   title: 'GST Details',
                   children: [
                     CustomTextField(
-                      label: 'HSN Code *',
-                      controller: _hsnCodeController,
-                      errorText: errors['hsnCode'],
-                      keyboardType: TextInputType.number,
+                      label: 'GST Rate (%) *',
+                      controller: _gstRateController,
+                      errorText: errors['gstRate'],
+                      keyboardType: TextInputType.numberWithOptions(decimal: true),
                       onChanged: (_) => validateField(
-                        'hsnCode',
-                        _hsnCodeController.text,
-                        Validators.isValidHsnCode,
-                        'Please enter a valid HSN code',
+                        'gstRate',
+                        _gstRateController.text,
+                        Validators.isValidPrice,
+                        'Please enter a valid GST rate',
                       ),
                     ),
                     SizedBox(height: 16),
@@ -142,30 +140,30 @@ class _GstMasterFormScreenState extends State<GstMasterFormScreen> with FormVali
                       children: [
                         Expanded(
                           child: CustomTextField(
-                            label: 'CGST % *',
+                            label: 'CGST Rate (%) *',
                             controller: _cgstController,
-                            errorText: errors['cgst'],
+                            errorText: errors['cgstRate'],
                             keyboardType: TextInputType.numberWithOptions(decimal: true),
                             onChanged: (_) => validateField(
-                              'cgst',
+                              'cgstRate',
                               _cgstController.text,
                               Validators.isValidPrice,
-                              'Please enter a valid percentage',
+                              'Please enter a valid CGST rate',
                             ),
                           ),
                         ),
                         SizedBox(width: 16),
                         Expanded(
                           child: CustomTextField(
-                            label: 'SGST % *',
+                            label: 'SGST Rate (%) *',
                             controller: _sgstController,
-                            errorText: errors['sgst'],
+                            errorText: errors['sgstRate'],
                             keyboardType: TextInputType.numberWithOptions(decimal: true),
                             onChanged: (_) => validateField(
-                              'sgst',
+                              'sgstRate',
                               _sgstController.text,
                               Validators.isValidPrice,
-                              'Please enter a valid percentage',
+                              'Please enter a valid SGST rate',
                             ),
                           ),
                         ),
@@ -173,22 +171,26 @@ class _GstMasterFormScreenState extends State<GstMasterFormScreen> with FormVali
                     ),
                     SizedBox(height: 16),
                     CustomTextField(
-                      label: 'IGST % *',
+                      label: 'IGST Rate (%) *',
                       controller: _igstController,
-                      errorText: errors['igst'],
+                      errorText: errors['igstRate'],
                       keyboardType: TextInputType.numberWithOptions(decimal: true),
                       onChanged: (_) => validateField(
-                        'igst',
+                        'igstRate',
                         _igstController.text,
                         Validators.isValidPrice,
-                        'Please enter a valid percentage',
+                        'Please enter a valid IGST rate',
                       ),
                     ),
                     SizedBox(height: 16),
-                    CustomTextField(
-                      label: 'Description',
-                      controller: _descriptionController,
-                      maxLines: 3,
+                    CheckboxListTile(
+                      title: const Text('Active'),
+                      value: _isActive,
+                      onChanged: (value) {
+                        setState(() {
+                          _isActive = value ?? true;
+                        });
+                      },
                     ),
                   ],
                 ),
@@ -209,11 +211,10 @@ class _GstMasterFormScreenState extends State<GstMasterFormScreen> with FormVali
 
   @override
   void dispose() {
+    _gstRateController.dispose();
     _cgstController.dispose();
     _sgstController.dispose();
     _igstController.dispose();
-    _hsnCodeController.dispose();
-    _descriptionController.dispose();
     super.dispose();
   }
 }
