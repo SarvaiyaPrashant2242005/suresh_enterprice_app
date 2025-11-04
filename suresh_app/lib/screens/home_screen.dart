@@ -96,72 +96,63 @@ class _HomeScreenState extends State<HomeScreen> {
       child: CustomScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
-          // Modern App Bar Header
+          // Clean Minimal Header
           SliverToBoxAdapter(
             child: Container(
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Theme.of(context).primaryColor,
-                    Theme.of(context).primaryColor.withOpacity(0.8),
-                  ],
-                ),
-                borderRadius: const BorderRadius.only(
-                  bottomLeft: Radius.circular(32),
-                  bottomRight: Radius.circular(32),
-                ),
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.08),
+                    blurRadius: 10,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
               padding: EdgeInsets.fromLTRB(
                 isTablet ? 32 : 20,
                 MediaQuery.of(context).padding.top + 20,
                 isTablet ? 32 : 20,
-                32,
+                24,
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              _getGreeting(),
-                              style: TextStyle(
-                                fontSize: isTablet ? 18 : 16,
-                                color: Colors.white.withOpacity(0.9),
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              userName,
-                              style: TextStyle(
-                                fontSize: isTablet ? 32 : 28,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ],
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          _getGreeting(),
+                          style: TextStyle(
+                            fontSize: isTablet ? 16 : 14,
+                            color: Colors.grey[600],
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
-                          shape: BoxShape.circle,
+                        const SizedBox(height: 4),
+                        Text(
+                          userName,
+                          style: TextStyle(
+                            fontSize: isTablet ? 28 : 24,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.grey[900],
+                          ),
                         ),
-                        child: Icon(
-                          Icons.person,
-                          size: isTablet ? 32 : 28,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ],
+                      ],
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[100],
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.person_outline,
+                      size: isTablet ? 28 : 24,
+                      color: Colors.grey[700],
+                    ),
                   ),
                 ],
               ),
@@ -175,27 +166,15 @@ class _HomeScreenState extends State<HomeScreen> {
               delegate: SliverChildListDelegate([
                 // Statistics Section Header
                 Padding(
-                  padding: const EdgeInsets.only(bottom: 16, top: 8),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 4,
-                        height: 24,
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).primaryColor,
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Text(
-                        'Overview',
-                        style: TextStyle(
-                          fontSize: isTablet ? 24 : 20,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.grey[800],
-                        ),
-                      ),
-                    ],
+                  padding: const EdgeInsets.only(bottom: 20, top: 8),
+                  child: Text(
+                    'Overview',
+                    style: TextStyle(
+                      fontSize: isTablet ? 22 : 18,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey[900],
+                      letterSpacing: -0.5,
+                    ),
                   ),
                 ),
 
@@ -214,53 +193,42 @@ class _HomeScreenState extends State<HomeScreen> {
                       childAspectRatio: childAspectRatio,
                       children: [
                         Consumer<CategoryProvider>(
-                          builder: (context, categoryProvider, _) => _ModernStatCard(
+                          builder: (context, categoryProvider, _) => _CleanStatCard(
                             title: 'Categories',
                             count: categoryProvider.categories.length,
-                            icon: Icons.category_rounded,
-                            gradient: const LinearGradient(
-                              colors: [Color(0xFF667eea), Color(0xFF764ba2)],
-                            ),
+                            icon: Icons.category_outlined,
+                            color: const Color(0xFF6366F1),
                             isLoading: categoryProvider.isLoading,
                           ),
                         ),
                         Consumer<ProductProvider>(
-                          builder: (context, productProvider, _) => _ModernStatCard(
+                          builder: (context, productProvider, _) => _CleanStatCard(
                             title: 'Products',
                             count: productProvider.products.length,
-                            icon: Icons.inventory_2_rounded,
-                            gradient: const LinearGradient(
-                              colors: [Color(0xFF11998e), Color(0xFF38ef7d)],
-                            ),
+                            icon: Icons.inventory_2_outlined,
+                            color: const Color(0xFF10B981),
                             isLoading: productProvider.isLoading,
                           ),
                         ),
-                        _ModernStatCard(
+                        _CleanStatCard(
                           title: 'Orders',
                           count: 0,
-                          icon: Icons.shopping_cart_rounded,
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFFf093fb), Color(0xFFf5576c)],
-                          ),
+                          icon: Icons.shopping_bag_outlined,
+                          color: const Color(0xFFF59E0B),
                           isLoading: false,
                         ),
-                        _ModernStatCard(
+                        _CleanStatCard(
                           title: 'Revenue',
                           count: 0,
-                          icon: Icons.attach_money_rounded,
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFFfa709a), Color(0xFFfee140)],
-                          ),
+                          icon: Icons.trending_up_rounded,
+                          color: const Color(0xFFEC4899),
                           isLoading: false,
-                          prefix: '\₹',
+                          prefix: '₹',
                         ),
                       ],
                     );
                   },
                 ),
-
-              
-               
 
                 SizedBox(height: MediaQuery.of(context).padding.bottom + 16),
               ]),
@@ -272,19 +240,19 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-class _ModernStatCard extends StatelessWidget {
+class _CleanStatCard extends StatelessWidget {
   final String title;
   final int count;
   final IconData icon;
-  final Gradient gradient;
+  final Color color;
   final bool isLoading;
   final String? prefix;
 
-  const _ModernStatCard({
+  const _CleanStatCard({
     required this.title,
     required this.count,
     required this.icon,
-    required this.gradient,
+    required this.color,
     this.isLoading = false,
     this.prefix,
   });
@@ -293,23 +261,27 @@ class _ModernStatCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        gradient: gradient,
-        borderRadius: BorderRadius.circular(15),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Colors.grey.withOpacity(0.12),
+          width: 1,
+        ),
         boxShadow: [
           BoxShadow(
-            color: gradient.colors.first.withOpacity(0.3),
-            blurRadius: 10,
-            offset: const Offset(0, 6),
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(15),
+          borderRadius: BorderRadius.circular(16),
           onTap: () {},
           child: Padding(
-            padding: const EdgeInsets.all(10),
+            padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -320,22 +292,22 @@ class _ModernStatCard extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.3),
+                        color: color.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Icon(
                         icon,
-                        color: Colors.white,
+                        color: color,
                         size: 24,
                       ),
                     ),
                     if (isLoading)
-                      const SizedBox(
+                      SizedBox(
                         width: 18,
                         height: 18,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          valueColor: AlwaysStoppedAnimation<Color>(color),
                         ),
                       ),
                   ],
@@ -344,21 +316,22 @@ class _ModernStatCard extends StatelessWidget {
                 Text(
                   title,
                   style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.white.withOpacity(0.9),
+                    fontSize: 13,
+                    color: Colors.grey[600],
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 6),
                 FittedBox(
                   fit: BoxFit.scaleDown,
                   alignment: Alignment.centerLeft,
                   child: Text(
                     '${prefix ?? ''}$count',
-                    style: const TextStyle(
-                      fontSize: 32,
+                    style: TextStyle(
+                      fontSize: 28,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: Colors.grey[900],
+                      letterSpacing: -0.5,
                     ),
                   ),
                 ),

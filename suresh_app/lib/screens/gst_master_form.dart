@@ -153,7 +153,7 @@ class _GstMasterBottomSheetState extends State<GstMasterBottomSheet> {
                   ),
                   const SizedBox(height: 24),
 
-                  // GST Rate Fields in a Row
+                  // First Row - GST Rate and SGST Rate
                   Row(
                     children: [
                       Expanded(
@@ -193,7 +193,13 @@ class _GstMasterBottomSheetState extends State<GstMasterBottomSheet> {
                           validator: _validateTaxRate,
                         ),
                       ),
-                      const SizedBox(width: 12),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Second Row - CGST Rate and IGST Rate
+                  Row(
+                    children: [
                       Expanded(
                         child: TextFormField(
                           controller: _cgstController,
@@ -235,20 +241,24 @@ class _GstMasterBottomSheetState extends State<GstMasterBottomSheet> {
                   ),
                   const SizedBox(height: 20),
 
-                  // Active Checkbox
+                  // Active Switch
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Checkbox(
+                      const Text(
+                        'Active',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      Switch(
                         value: _isActive,
                         onChanged: (value) {
                           setState(() {
-                            _isActive = value ?? true;
+                            _isActive = value;
                           });
                         },
-                      ),
-                      const Text(
-                        'Active',
-                        style: TextStyle(fontSize: 16),
                       ),
                     ],
                   ),
@@ -288,4 +298,4 @@ class _GstMasterBottomSheetState extends State<GstMasterBottomSheet> {
       ),
     );
   }
-}           
+}

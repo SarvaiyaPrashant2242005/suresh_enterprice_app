@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import '../model/user.dart';
 import '../providers/user_provider.dart';
 import '../widgets/loading_indicator.dart';
-import 'user_form_screen.dart'; // ✅ Import the new form screen
+import 'user_form_screen.dart';
 
 class UsersScreen extends StatefulWidget {
   const UsersScreen({Key? key}) : super(key: key);
@@ -39,7 +39,7 @@ class _UsersScreenState extends State<UsersScreen> {
       builder: (ctx) {
         return UserFormSheet(
           user: user,
-          onSuccess: _refreshUsers, // callback after add/update
+          onSuccess: _refreshUsers,
         );
       },
     );
@@ -48,6 +48,12 @@ class _UsersScreenState extends State<UsersScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('Users'),
+        elevation: 0,
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.grey,
+      ),
       body: Consumer<UserProvider>(
         builder: (ctx, userProvider, child) {
           if (userProvider.isLoading) {
@@ -166,7 +172,7 @@ class _UsersScreenState extends State<UsersScreen> {
                               builder: (ctx) => AlertDialog(
                                 title: const Text('Delete User'),
                                 content:
-                                    Text('Delete ${user.name}? This can’t be undone.'),
+                                    Text('Delete ${user.name}? This can\'t be undone.'),
                                 actions: [
                                   TextButton(
                                     onPressed: () => Navigator.pop(ctx),

@@ -69,24 +69,7 @@ class SidebarDrawer extends StatelessWidget {
                 ),
               ),
             ),
-            otherAccountsPictures: [
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.9),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  userType,
-                  style: const TextStyle(
-                    color: Color(0xFF00796B),
-                    fontWeight: FontWeight.bold,
-                    fontSize: 12,
-                  ),
-                ),
-              ),
-            ],
+
           ),
 
           // Scrollable List Items
@@ -167,14 +150,10 @@ class SidebarDrawer extends StatelessWidget {
                   onTap: () {
                     onSelect('Users');
                     Navigator.pop(context);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const UsersScreen()),
-                    );
+                    
                   },
                 ),
-                const Divider(),
+               
                 _buildDrawerItem(
                   context: context,
                   icon: Icons.person_outline,
