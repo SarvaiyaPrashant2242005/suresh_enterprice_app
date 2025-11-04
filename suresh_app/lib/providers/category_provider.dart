@@ -19,17 +19,24 @@ class CategoryProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
 
-  Future<void> fetchCategories({int? companyId}) async {
+  Future<void> fetchCategories({int? companyId, String? userType}) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      if (companyId == null) {
-        companyId = await _storage.getCompanyId();
+      // If user is Admin, fetch all categories (pass null for companyId)
+      if (userType == 'Admin User') {
+        final categories = await _apiClient.getCategories(companyId: null);
+        _categories = categories;
+      } else {
+        // For non-admin users, filter by companyId
+        if (companyId == null) {
+          companyId = await _storage.getCompanyId();
+        }
+        final categories = await _apiClient.getCategoriesByCompanyId(companyId!);
+        _categories = categories;
       }
-      final categories = await _apiClient.getCategoriesByCompanyId(companyId!);
-      _categories = categories;
       _isLoading = false;
       notifyListeners();
     } catch (e) {

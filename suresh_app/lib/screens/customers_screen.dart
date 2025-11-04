@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../model/customer.dart';
 import '../providers/customer_provider.dart';
+import '../providers/auth_provider_updated.dart';
 import '../widgets/loading_indicator.dart';
 
 class CustomersScreen extends StatefulWidget {
@@ -25,8 +26,10 @@ class _CustomersScreenState extends State<CustomersScreen> {
 
   Future<void> _refreshCustomers() async {
     try {
-      // CustomerProvider.fetchCustomers() will get companyId from StorageService internally
-      await Provider.of<CustomerProvider>(context, listen: false).fetchCustomers();
+      // Get userType from auth provider to determine if Admin should see all data
+      final auth = Provider.of<AuthProvider>(context, listen: false);
+      final userType = auth.authData?['user']?['userType'] ?? auth.authData?['userType'];
+      await Provider.of<CustomerProvider>(context, listen: false).fetchCustomers(userType: userType);
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

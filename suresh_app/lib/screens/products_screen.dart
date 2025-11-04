@@ -39,9 +39,11 @@ class _ProductsScreenState extends State<ProductsScreen> {
     // get company id from auth provider so we can filter and include it on create
     final auth = Provider.of<AuthProvider>(context, listen: false);
     _companyId = auth.authData?['user']?['companyId'] as int?;
-    await _productProvider.fetchProducts(companyId: _companyId);
+    // Get userType from authData
+    final userType = auth.authData?['user']?['userType'] ?? auth.authData?['userType'];
+    await _productProvider.fetchProducts(companyId: _companyId, userType: userType);
       if (_categoryProvider.categories.isEmpty) {
-        await _categoryProvider.fetchCategories(companyId: _companyId);
+        await _categoryProvider.fetchCategories(companyId: _companyId, userType: userType);
     }
   }
 

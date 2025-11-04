@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../model/category.dart';
 import '../providers/category_provider.dart';
+import '../providers/auth_provider_updated.dart';
 import '../utils/dialog_utils.dart';
 import '../widgets/loading_overlay.dart';
 import 'category_form_screen.dart';
@@ -19,12 +20,16 @@ class _CategoriesTabScreenState extends State<CategoriesTabScreen> {
     super.initState();
     // Fetch categories on init
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<CategoryProvider>(context, listen: false).fetchCategories();
+      final auth = Provider.of<AuthProvider>(context, listen: false);
+      final userType = auth.authData?['user']?['userType'] ?? auth.authData?['userType'];
+      Provider.of<CategoryProvider>(context, listen: false).fetchCategories(userType: userType);
     });
   }
 
   Future<void> _refreshCategories(BuildContext context) async {
-    await Provider.of<CategoryProvider>(context, listen: false).fetchCategories();
+    final auth = Provider.of<AuthProvider>(context, listen: false);
+    final userType = auth.authData?['user']?['userType'] ?? auth.authData?['userType'];
+    await Provider.of<CategoryProvider>(context, listen: false).fetchCategories(userType: userType);
   }
 
   @override

@@ -49,9 +49,11 @@ class SidebarDrawer extends StatelessWidget {
             icon: Icons.people,
             title: 'Customers',
             onTap: () {
-              // Trigger fetch before navigating
+              // Trigger fetch before navigating with userType
+              final auth = Provider.of<AuthProvider>(context, listen: false);
+              final userType = auth.authData?['user']?['userType'] ?? auth.authData?['userType'];
               Provider.of<CustomerProvider>(context, listen: false)
-                  .fetchCustomers();
+                  .fetchCustomers(userType: userType);
               onSelect('Customers');
             },
           ),

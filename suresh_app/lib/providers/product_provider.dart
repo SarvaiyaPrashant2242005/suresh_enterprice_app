@@ -16,21 +16,28 @@ class ProductProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
 
-  Future<void> fetchProducts({int? companyId}) async {
+  Future<void> fetchProducts({int? companyId, String? userType}) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      if (companyId == null) {
-        companyId = await _storage.getCompanyId();
-      }
-      final all = await _apiClient.getProducts(companyId: companyId);
-      // server may filter; if not, apply client-side fallback
-      if (companyId != null) {
-        _products = all.where((p) => p.companyId == companyId).toList();
-      } else {
+      // If user is Admin, fetch all products (pass null for companyId)
+      if (userType == 'Admin User') {
+        final all = await _apiClient.getProducts(companyId: null);
         _products = all;
+      } else {  
+        // For non-admin users, filter by companyId
+        if (companyId == null) {
+          companyId = await _storage.getCompanyId();
+        }
+        final all = await _apiClient.getProducts(companyId: companyId);
+        // server may filter; if not, apply client-side fallback
+        if (companyId != null) {
+          _products = all.where((p) => p.companyId == companyId).toList();
+        } else {
+          _products = all;
+        }
       }
       _isLoading = false;
       notifyListeners();

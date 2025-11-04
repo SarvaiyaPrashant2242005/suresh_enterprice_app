@@ -13,20 +13,26 @@ class CustomerProvider extends BaseProvider {
 
   List<Customer> get customers => _customers;
 
-  Future<void> fetchCustomers({int? companyId}) async {
+  Future<void> fetchCustomers({int? companyId, String? userType}) async {
     setLoading(true);
     clearError();
     try {
-      // If caller didn't provide companyId, try to read from storage
-      if (companyId == null) {
-        companyId = await _storage.getCompanyId();
-      }
-      print('Fetching customers for companyId: $companyId');
-      if (companyId != null) {
-        final response = await _apiClient.getCustomersByCompanyId(companyId);
+      // If user is Admin, fetch all customers (pass null for companyId)
+      if (userType == 'Admin User') {
+        final response = await _apiClient.getCustomers(companyId: null);
         _customers = response;
       } else {
-        _customers = [];
+        // For non-admin users, filter by companyId
+        if (companyId == null) {
+          companyId = await _storage.getCompanyId();
+        }
+        print('Fetching customers for companyId: $companyId');
+        if (companyId != null) {
+          final response = await _apiClient.getCustomersByCompanyId(companyId);
+          _customers = response;
+        } else {
+          _customers = [];
+        }
       }
       notifyListeners();
     } catch (e) {

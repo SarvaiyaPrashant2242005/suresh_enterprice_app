@@ -69,6 +69,11 @@ class AuthProvider with ChangeNotifier {
       final user = response['user'] as Map<String, dynamic>?;
       if (user != null) {
         _authData = user;
+        // Print userType in debug console
+        final userType = user['userType'];
+        if (kDebugMode) {
+          print('🔐 Login successful - UserType: $userType');
+        }
       } else {
         _authData = null;
       }

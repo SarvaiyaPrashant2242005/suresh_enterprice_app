@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../model/category.dart';
 import '../providers/category_provider.dart';
-import '../providers/auth_provider.dart';
+import '../providers/auth_provider_updated.dart';
 import '../services/api_client.dart';
 import '../widgets/loading_indicator.dart';
 
@@ -30,13 +30,16 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
   Future<void> _loadCategories() async {
     final auth = Provider.of<AuthProvider>(context, listen: false);
     int? companyId;
+    String? userType;
     final ad = auth.authData;
     if (ad != null) {
       final dynamic c = ad['company_id'] ?? ad['companyId'] ?? (ad['user'] is Map ? (ad['user']['company_id'] ?? ad['user']['companyId']) : null);
       if (c is num) companyId = c.toInt();
       if (c is String) companyId = int.tryParse(c);
+      // Get userType from authData
+      userType = ad['userType'] ?? (ad['user'] is Map ? ad['user']['userType'] : null);
     }
-    await _categoryProvider.fetchCategories(companyId: companyId);
+    await _categoryProvider.fetchCategories(companyId: companyId, userType: userType);
   }
 
   void _showAddEditDialog({Category? category}) {
