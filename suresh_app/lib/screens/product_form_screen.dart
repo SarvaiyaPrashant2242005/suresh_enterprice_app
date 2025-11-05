@@ -33,7 +33,6 @@ class _ProductFormScreenState extends State<ProductFormScreen> with FormValidati
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: widget.product?.name);
-    _hsnCodeController = TextEditingController(text: widget.product?.hsnCode);
     _descriptionController = TextEditingController(text: widget.product?.description);
     _priceController = TextEditingController(
       text: widget.product?.price?.toStringAsFixed(2),
@@ -95,7 +94,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> with FormValidati
         hsnCode: _hsnCodeController.text,
         description: _descriptionController.text.isEmpty ? null : _descriptionController.text,
         price: double.parse(_priceController.text),
-        categoryId: int.parse(_selectedCategoryId!),
+        categoryId: int.parse(_selectedCategoryId!), uom: '',
       );
 
       final api = context.read<ApiClient>();

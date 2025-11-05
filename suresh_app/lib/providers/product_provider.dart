@@ -1,11 +1,9 @@
 import 'package:flutter/foundation.dart';
 import '../model/product.dart';
 import '../services/api_client.dart';
-import '../services/storage_service.dart';
 
 class ProductProvider with ChangeNotifier {
   final ApiClient _apiClient;
-  final StorageService _storage = StorageService();
   List<Product> _products = [];
   bool _isLoading = false;
   String? _errorMessage;
@@ -22,23 +20,7 @@ class ProductProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      // If user is Admin, fetch all products (pass null for companyId)
-      if (userType == 'Admin User') {
-        final all = await _apiClient.getProducts(companyId: null);
-        _products = all;
-      } else {  
-        // For non-admin users, filter by companyId
-        if (companyId == null) {
-          companyId = await _storage.getCompanyId();
-        }
-        final all = await _apiClient.getProducts(companyId: companyId);
-        // server may filter; if not, apply client-side fallback
-        if (companyId != null) {
-          _products = all.where((p) => p.companyId == companyId).toList();
-        } else {
-          _products = all;
-        }
-      }
+      _products = await _apiClient.getProducts();
       _isLoading = false;
       notifyListeners();
     } catch (e) {
@@ -54,11 +36,7 @@ class ProductProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      int? companyId = product.companyId;
-      if (companyId == null) {
-        companyId = await _storage.getCompanyId();
-      }
-      final newProduct = await _apiClient.createProductWithCompany(product, companyId: companyId);
+      final newProduct = await _apiClient.createProduct(product);
       _products.add(newProduct);
       _isLoading = false;
       notifyListeners();

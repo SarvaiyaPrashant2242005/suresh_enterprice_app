@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:suresh_app/controller/invoiceController.dart';
+import 'package:suresh_app/providers/invoice_provider.dart';
 import 'package:suresh_app/providers/user_provider.dart';
 import 'services/api_client.dart';
 import 'providers/auth_provider_updated.dart';
@@ -51,6 +53,9 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ProductProvider(apiClient)),
         ChangeNotifierProvider(
           create: (_) => CustomerProvider(apiClient),
+        ),
+         ChangeNotifierProvider(
+          create: (_) => InvoiceProvider(InvoiceController(apiClient)),
         ),
         ChangeNotifierProvider(
           create: (_) => GstMasterProvider(apiClient),

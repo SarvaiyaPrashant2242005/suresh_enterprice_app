@@ -100,8 +100,7 @@ class _ProductsTabScreenState extends State<ProductsTabScreen> {
                         Text('Price: ₹${product.price.toStringAsFixed(2)}'),
                         if (product.categoryName != null)
                           Text('Category: ${product.categoryName}'),
-                        if (product.hsnCode != null)
-                          Text('HSN Code: ${product.hsnCode}'),
+                        
                       ],
                     ),
                     trailing: Row(
@@ -141,3 +140,4 @@ class _ProductsTabScreenState extends State<ProductsTabScreen> {
     );
   }
 }
+
